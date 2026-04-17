@@ -15,6 +15,27 @@ use App\Http\Controllers\PaketController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    // return view('welcome');
+    return view('login');
 });
+
 Route::resource('paket', PaketController::class);
+
+// login pengguna
+Route::get('/dashboard', [App\Http\Controllers\UserDashboardController::class, 'index'])->middleware('pengguna')->name('dashboard');
+Route::get('/login', [App\Http\Controllers\AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
+Route::get('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/login');
+})->name('logout');
+
+// untuk ubah password
+Route::get('/ubahpassword', [App\Http\Controllers\AuthController::class, 'ubahpassword'])
+    ->middleware('pengguna')
+    ->name('ubahpassword');
+Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 'prosesubahpassword'])
+    ->middleware('pengguna')
+;
