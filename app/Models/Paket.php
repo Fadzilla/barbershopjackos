@@ -12,4 +12,10 @@ class Paket extends Model
     'deskripsi',
     'harga',
 ];
+
+// Relasi dengan tabel relasi many to many nya
+    public function pendapatanJasa()
+    {
+        return $this->hasMany(PendapatanJasa::class, 'pakets_id');
+    }
 }
