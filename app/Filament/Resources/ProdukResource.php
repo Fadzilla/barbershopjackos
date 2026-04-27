@@ -29,6 +29,9 @@ class ProdukResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
     protected static ?string $navigationLabel = 'Produk';
 
+    // tambahan buat grup masterdata
+    protected static ?string $navigationGroup = 'Masterdata';
+
     public static function form(Form $form): Form
     {
         return $form
