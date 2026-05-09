@@ -15,12 +15,18 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     // return view('welcome');
-    return view('login');
+    // return view('login');
+    return redirect('/login');
 });
 
 // contoh route yang mengarah ke konten statis
 Route::get('/selamat', function () {
     return view('selamat',['nama'=>'Farel Prayoga']);
+});
+
+// contoh route yang mengarah ke konten statis
+Route::get('/utama', function () {
+    return view('layout',['nama'=>'Farel Prayoga','title'=>'Selamat Datang']);
 });
 
 // contoh route tanpa view, hanya controller
@@ -33,11 +39,11 @@ Route::get('/contoh2', [App\Http\Controllers\Contoh2Controller::class,'show']);
 Route::get('/coa', [App\Http\Controllers\CoaController::class,'index']);
 
 // login customer
-Route::get('/depan', [App\Http\Controllers\KeranjangController::class, 'daftarbarang'])->middleware('pengguna')->name('depan');
+Route::get('/depan', [App\Http\Controllers\KeranjangController::class, 'daftarbarang'])->middleware('customer')->name('depan');
 Route::get('/login', [App\Http\Controllers\AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
 Route::get('/logout', function () {
-    Auth::logout(); 
+    Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
     return redirect('/login');
@@ -59,9 +65,33 @@ Route::get('/ktp/list', [OcrController::class, 'list'])->name('ktp.list');
 
 // untuk ubah password
 Route::get('/ubahpassword', [App\Http\Controllers\AuthController::class, 'ubahpassword'])
-    ->middleware('pengguna')
+    ->middleware('customer')
     ->name('ubahpassword');
 Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 'prosesubahpassword'])
-    ->middleware('pengguna')
+    ->middleware('customer')
 ;
 // prosesubahpassword
+
+
+// tes notifikasi WA
+Route::get('/tes-wa', [App\Http\Controllers\NotificationController::class, 'kirimNotifikasi']);
+
+
+// contoh sampel sederhana untuk mengetes midtrans
+Route::get('/cekmidtrans', [App\Http\Controllers\CobaMidtransController::class, 'cekmidtrans']);
+
+// contoh menggunakan callback
+use App\Http\Controllers\CobaMidtransController;
+// Route untuk menampilkan halaman tombol bayar & simulasi
+Route::get('/cek-midtrans', [CobaMidtransController::class, 'cekmidtranscallback']);
+
+// penjualan dan pembayaran customer
+Route::post('/tambah', [App\Http\Controllers\KeranjangController::class, 'tambahKeranjang'])->middleware('customer');
+Route::get('/lihatkeranjang', [App\Http\Controllers\KeranjangController::class, 'lihatkeranjang'])->middleware('customer');
+Route::delete('/hapus/{barang_id}', [App\Http\Controllers\KeranjangController::class, 'hapus'])->middleware('customer');
+Route::get('/lihatriwayat', [App\Http\Controllers\KeranjangController::class, 'lihatriwayat'])->middleware('customer');
+// untuk autorefresh pembayaran
+Route::get('/cek_status_pembayaran_pg', [App\Http\Controllers\KeranjangController::class, 'cek_status_pembayaran_pg']);
+// proses pengiriman email
+use App\Http\Controllers\PengirimanEmailController;
+Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailController::class, 'proses_kirim_email_pembayaran']);
