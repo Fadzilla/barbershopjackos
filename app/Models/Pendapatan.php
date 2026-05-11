@@ -38,7 +38,13 @@ class Pendapatan extends Model
     // relasi ke tabel pelanggan
     public function pelanggan()
     {
-        return $this->belongsTo(Pelanggan::class, 'kode_pelanggan');
+        return $this->belongsTo(Pelanggan::class, 'pelanggan_id');
+    }
+
+    // relasi ke tabel pegawai
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class, 'pegawai_id');
     }
 
     // relasi ke tabel pendapatan jasa
