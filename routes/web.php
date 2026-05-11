@@ -37,5 +37,32 @@ Route::get('/ubahpassword', [App\Http\Controllers\AuthController::class, 'ubahpa
     ->middleware('pengguna')
     ->name('ubahpassword');
 Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 'prosesubahpassword'])
-    ->middleware('pengguna')
-;
+    ->middleware('pengguna');
+
+// proses pengiriman email
+use App\Http\Controllers\PengirimanEmailController;
+Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailController::class, 'proses_kirim_email_pembayaran']);
+
+// untuk tes apriori
+use App\Http\Controllers\AprioriTestController;
+Route::get('/test-apriori', [AprioriTestController::class, 'test']);
+Route::get('/test-apriori-2', [AprioriTestController::class, 'tes2']);
+
+// contoh sampel sederhana untuk mengetes midtrans
+Route::get('/midtrans', [App\Http\Controllers\MidtransController::class, 'midtrans']);
+
+// contoh menggunakan callback
+use App\Http\Controllers\MidtransController;
+// Route untuk menampilkan halaman tombol bayar & simulasi
+Route::get('/cek-midtrans', [MidtransController::class, 'midtranscallback']);
+// Route untuk menampilkan halaman tombol bayar & simulasi
+Route::get('/midtrans', [MidtransController::class, 'midtranscallback']);
+
+Route::get('/midtrans/pembayaran/{token}', function ($token) {
+    return view('midtrans.pembayaran', ['snapToken' => $token]);
+})->name('midtrans.pembayaran');
+
+// Route untuk menerima laporan dari Midtrans (Callback) sesuai 8.7
+Route::post('/midtrans/callback', [MidtransController::class, 'handleCallback']);
+// untuk autorefresh pembayaran
+Route::get('/cek_status_pembayaran_pg', [App\Http\Controllers\KeranjangController::class, 'cek_status_pembayaran_pg']);
