@@ -17,4 +17,8 @@ use App\Http\Controllers\PaketController;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// proses pengiriman email
+use App\Http\Controllers\PengirimanEmailController;
+Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailController::class, 'proses_kirim_email_pembayaran']);
 Route::resource('paket', PaketController::class);
