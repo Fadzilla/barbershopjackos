@@ -17,7 +17,7 @@ return new class extends Migration
 
             // relasi ke pegawai
             $table->foreignId('pegawai_id')
-                ->constrained('pegawais')
+                ->constrained('pegawai')
                 ->cascadeOnDelete();
 
             // relasi ke produk

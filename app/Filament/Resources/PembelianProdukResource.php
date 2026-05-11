@@ -17,8 +17,26 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 
+// Wizard
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
+
 // Table Columns
 use Filament\Tables\Columns\TextColumn;
+
+// Actions
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ExportAction;
+
+// PDF
+use Barryvdh\DomPDF\Facade\Pdf;
+
+// Export
+use App\Filament\Exports\PembelianProdukExporter;
+
+// Mail
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PembelianProdukMail;
 
 class PembelianProdukResource extends Resource
 {
@@ -27,6 +45,9 @@ class PembelianProdukResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 
     protected static ?string $navigationLabel = 'Pembelian Produk';
+
+    // GROUP MENU
+    protected static ?string $navigationGroup = 'Transaksi';
 
     /*
     |--------------------------------------------------------------------------
@@ -39,33 +60,95 @@ class PembelianProdukResource extends Resource
         return $form
             ->schema([
 
-                // Nama Pegawai
-                Select::make('pegawai_id')
-                    ->relationship('pegawai', 'nama_pegawai')
-                    ->label('Nama Pegawai')
-                    ->searchable()
-                    ->required(),
+                Wizard::make([
 
-                // Nama Produk
-                Select::make('produk_id')
-                    ->relationship('produk', 'nama_produk')
-                    ->label('Nama Produk')
-                    ->searchable()
-                    ->required(),
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STEP 1 - DATA PEGAWAI
+                    |--------------------------------------------------------------------------
+                    */
 
-                // Tanggal
-                DatePicker::make('tanggal')
-                    ->required(),
+                    Step::make('Data Pegawai')
+                        ->schema([
 
-                // Harga Per Unit
-                TextInput::make('harga_per_unit')
-                    ->numeric()
-                    ->required(),
+                            Select::make('pegawai_id')
+                                ->relationship('pegawai', 'nama_pegawai')
+                                ->label('Nama Pegawai')
+                                ->searchable()
+                                ->required(),
 
-                // Total
-                TextInput::make('total')
-                    ->numeric()
-                    ->required(),
+                            DatePicker::make('tanggal')
+                                ->required(),
+
+                        ]),
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STEP 2 - DATA PRODUK
+                    |--------------------------------------------------------------------------
+                    */
+
+                    Step::make('Data Produk')
+                        ->schema([
+
+                            TextInput::make('no_faktur')
+                                ->label('No Faktur')
+                                ->required(),
+
+                            Select::make('produk_id')
+                                ->relationship('produk', 'nama_produk')
+                                ->label('Nama Produk')
+                                ->searchable()
+                                ->required(),
+
+                            TextInput::make('qty')
+                                ->label('Quantity')
+                                ->numeric()
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
+
+                                    $harga = (int) $get('harga_per_unit');
+
+                                    $qty = (int) $state;
+
+                                    $set('total', $qty * $harga);
+                                }),
+
+                            TextInput::make('harga_per_unit')
+                                ->label('Harga Satuan')
+                                ->numeric()
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
+
+                                    $qty = (int) $get('qty');
+
+                                    $harga = (int) $state;
+
+                                    $set('total', $qty * $harga);
+                                }),
+
+                        ]),
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STEP 3 - TOTAL PEMBELIAN
+                    |--------------------------------------------------------------------------
+                    */
+
+                    Step::make('Total Pembelian')
+                        ->schema([
+
+                            TextInput::make('total')
+                                ->numeric()
+                                ->readOnly()
+                                ->prefix('Rp'),
+
+                        ]),
+
+                ])
+                ->columnSpanFull()
 
             ]);
     }
@@ -79,6 +162,49 @@ class PembelianProdukResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+
+            ->headerActions([
+
+                /*
+                |--------------------------------------------------------------------------
+                | EXPORT EXCEL
+                |--------------------------------------------------------------------------
+                */
+
+                ExportAction::make()
+                    ->label('Unduh Excel')
+                    ->exporter(PembelianProdukExporter::class),
+
+                /*
+                |--------------------------------------------------------------------------
+                | EXPORT PDF
+                |--------------------------------------------------------------------------
+                */
+
+                Action::make('pdf')
+
+                    ->label('Unduh PDF')
+
+                    ->color('success')
+
+                    ->icon('heroicon-o-document-arrow-down')
+
+                    ->action(function () {
+
+                        $data = PembelianProduk::all();
+
+                        $pdf = Pdf::loadView('pdf.pembelian_produk', [
+                            'data' => $data
+                        ]);
+
+                        return response()->streamDownload(
+                            fn () => print($pdf->output()),
+                            'laporan-pembelian-produk.pdf'
+                        );
+                    }),
+
+            ])
+
             ->columns([
 
                 TextColumn::make('pegawai.nama_pegawai')
@@ -98,13 +224,59 @@ class PembelianProdukResource extends Resource
                 TextColumn::make('total')
                     ->money('IDR'),
 
+                TextColumn::make('no_faktur')
+                    ->label('No Faktur'),
+
+                TextColumn::make('qty')
+                    ->label('Qty'),
+
             ])
+
             ->actions([
+
+                /*
+                |--------------------------------------------------------------------------
+                | KIRIM EMAIL
+                |--------------------------------------------------------------------------
+                */
+
+                Action::make('email')
+
+                    ->label('Kirim Email')
+
+                    ->icon('heroicon-o-envelope')
+
+                    ->color('warning')
+
+                    ->action(function ($record) {
+
+                        Mail::to('test@gmail.com')
+                            ->send(new PembelianProdukMail($record));
+
+                    }),
+
+                /*
+                |--------------------------------------------------------------------------
+                | EDIT
+                |--------------------------------------------------------------------------
+                */
+
                 Tables\Actions\EditAction::make(),
+
+                /*
+                |--------------------------------------------------------------------------
+                | DELETE
+                |--------------------------------------------------------------------------
+                */
+
                 Tables\Actions\DeleteAction::make(),
+
             ])
+
             ->bulkActions([
+
                 Tables\Actions\DeleteBulkAction::make(),
+
             ]);
     }
 
