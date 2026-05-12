@@ -13,23 +13,14 @@ class PembelianProduk extends Model
 
     protected $guarded = [];
 
-    /*
-    |--------------------------------------------------------------------------
-    | RELASI PEGAWAI
-    |--------------------------------------------------------------------------
-    */
+   // relasi untuk pegawai
 
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | RELASI PRODUK
-    |--------------------------------------------------------------------------
-    */
-
+    // relasi ke produk
     public function produk()
     {
         return $this->belongsTo(Produk::class, 'produk_id');

@@ -49,11 +49,8 @@ class PembelianProdukResource extends Resource
     // GROUP MENU
     protected static ?string $navigationGroup = 'Transaksi';
 
-    /*
-    |--------------------------------------------------------------------------
-    | FORM
-    |--------------------------------------------------------------------------
-    */
+    //form
+
 
     public static function form(Form $form): Form
     {
@@ -62,11 +59,7 @@ class PembelianProdukResource extends Resource
 
                 Wizard::make([
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | STEP 1 - DATA PEGAWAI
-                    |--------------------------------------------------------------------------
-                    */
+                    // 1 untuk data pegawai
 
                     Step::make('Data Pegawai')
                         ->schema([
@@ -82,11 +75,7 @@ class PembelianProdukResource extends Resource
 
                         ]),
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | STEP 2 - DATA PRODUK
-                    |--------------------------------------------------------------------------
-                    */
+                    // 2 untruk data produk
 
                     Step::make('Data Produk')
                         ->schema([
@@ -131,11 +120,7 @@ class PembelianProdukResource extends Resource
 
                         ]),
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | STEP 3 - TOTAL PEMBELIAN
-                    |--------------------------------------------------------------------------
-                    */
+                    // total pembelian
 
                     Step::make('Total Pembelian')
                         ->schema([
@@ -153,11 +138,7 @@ class PembelianProdukResource extends Resource
             ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | TABLE
-    |--------------------------------------------------------------------------
-    */
+    // tabelnya
 
     public static function table(Table $table): Table
     {
@@ -165,21 +146,13 @@ class PembelianProdukResource extends Resource
 
             ->headerActions([
 
-                /*
-                |--------------------------------------------------------------------------
-                | EXPORT EXCEL
-                |--------------------------------------------------------------------------
-                */
+                // untuk export excel
 
                 ExportAction::make()
                     ->label('Unduh Excel')
                     ->exporter(PembelianProdukExporter::class),
 
-                /*
-                |--------------------------------------------------------------------------
-                | EXPORT PDF
-                |--------------------------------------------------------------------------
-                */
+               // untuk export pdf
 
                 Action::make('pdf')
 
@@ -234,12 +207,7 @@ class PembelianProdukResource extends Resource
 
             ->actions([
 
-                /*
-                |--------------------------------------------------------------------------
-                | KIRIM EMAIL
-                |--------------------------------------------------------------------------
-                */
-
+                // untuk mengirim email
                 Action::make('email')
 
                     ->label('Kirim Email')
@@ -255,19 +223,11 @@ class PembelianProdukResource extends Resource
 
                     }),
 
-                /*
-                |--------------------------------------------------------------------------
-                | EDIT
-                |--------------------------------------------------------------------------
-                */
+                // untuk mengedit
 
                 Tables\Actions\EditAction::make(),
 
-                /*
-                |--------------------------------------------------------------------------
-                | DELETE
-                |--------------------------------------------------------------------------
-                */
+                //untuk mendelete
 
                 Tables\Actions\DeleteAction::make(),
 
@@ -280,11 +240,7 @@ class PembelianProdukResource extends Resource
             ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | RELATIONS
-    |--------------------------------------------------------------------------
-    */
+   // untuk relasinya
 
     public static function getRelations(): array
     {
@@ -293,11 +249,7 @@ class PembelianProdukResource extends Resource
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | PAGES
-    |--------------------------------------------------------------------------
-    */
+    // untuk pages
 
     public static function getPages(): array
     {
