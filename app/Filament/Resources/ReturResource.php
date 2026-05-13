@@ -31,7 +31,7 @@ use App\Models\Produk;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 // CONTROLLER EMAIL
-use App\Http\Controllers\PengirimanEmailController;
+use App\Http\Controllers\PengirimanEmailReturController;
 
 class ReturResource extends Resource
 {
@@ -345,7 +345,7 @@ class ReturResource extends Resource
 
                     ->action(function ($record) {
 
-                        PengirimanEmailController::
+                        PengirimanEmailReturController::
                             proses_kirim_email_retur(
                                 $record->id
                             );

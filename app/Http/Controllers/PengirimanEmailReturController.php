@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\PengirimanEmail;
+use App\Models\PengirimanEmailRetur;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\InvoiceMail;
+use App\Mail\InvoiceMailRetur;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-class PengirimanEmailController extends Controller
+class PengirimanEmailReturController extends Controller
 {
     public static function proses_kirim_email_retur($id)
     {
@@ -41,10 +41,10 @@ class PengirimanEmailController extends Controller
             ]);
 
             Mail::to($email)->send(
-                new InvoiceMail($data)
+                new InvoiceMailRetur($data)
             );
 
-            PengirimanEmail::create([
+            PengirimanEmailRetur::create([
                 'retur_id'      => $data->id,
                 'email_tujuan'  => $email,
                 'subjek'        => 'Invoice Retur Barang',

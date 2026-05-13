@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Retur;
 
-class PengirimanEmail extends Model
+class PengirimanEmailRetur extends Model
 {
     use HasFactory;
 

@@ -30,5 +30,5 @@ class Produk extends Model
     public function returs()
     {
         return $this->hasMany(Retur::class, 'produk_id');
-    }
+  }
 }
