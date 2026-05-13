@@ -8,7 +8,6 @@
             font-family: sans-serif; 
             font-size: 12px; 
         }
-
         .invoice-box {
             width: 100%;
             padding: 20px;
@@ -58,7 +57,7 @@
     <div class="info">
         <strong>No Faktur:</strong> {{ $no_faktur }} <br>
 
-        <strong>Nama Pembeli:</strong> {{ $nama_pembeli }} <br>
+        <strong>Nama Pembeli:</strong> {{ $nama_pelanggan }} <br>
 
         <strong>Tanggal:</strong> {{ $tanggal }}
     </div>
