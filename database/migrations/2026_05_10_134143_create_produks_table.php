@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
    {
-    Schema::create('produks', function (Blueprint $table) {
+    Schema::create('produk', function (Blueprint $table) {
         $table->id();
         $table->string('nama_produk'); // Nama produk
         $table->enum('status', ['Tersedia', 'Habis']); // Status produk
         $table->text('deskripsi_produk'); // Deskripsi produk
+        $table->string('stok')->default(0);
+        $table->integer('harga_produk')->default(0);
         $table->date('tanggal_masuk'); // Tanggal input 
         $table->string('foto_produk'); // Upload foto (jpg/png) s
         $table->timestamps();
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('produk');
     }
 };
