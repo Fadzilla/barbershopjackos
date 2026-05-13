@@ -3,111 +3,88 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\PengirimanEmail;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\InvoiceMail;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\PengirimanEmail; 
+use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\Mail; 
+use App\Mail\InvoiceMail; 
+use Barryvdh\DomPDF\Facade\Pdf; 
 
 class PengirimanEmailController extends Controller
 {
-    public static function proses_kirim_email_pembayaran()
-    {
+    public static function proses_kirim_email_pembayaran(){
+        
+        // 1. Ambil data transaksi utama termasuk email user dan nama pegawai
+        $data = DB::table('pendapatan')
+                ->join('pelanggan', 'pendapatan.pelanggan_id', '=', 'pelanggan.id')
+                ->join('users', 'pelanggan.user_id', '=', 'users.id') 
+                ->join('pegawai', 'pendapatan.pegawai_id', '=', 'pegawai.id') 
+                ->where('pendapatan.status', 'bayar')
+                ->whereNotIn('pendapatan.id', function ($query) {
+                    $query->select('pendapatan_id')
+                        ->from('pengiriman_email');
+                })
+                ->select(
+                    'pendapatan.id', 
+                    'pendapatan.no_faktur', 
+                    'users.email', 
+                    'users.name as nama_user',
+                    'pegawai.nama_pegawai'
+                )
+                ->first();
 
-        // Ambil data pembelian yang sudah bayar
-        // dan belum pernah dikirim email
-        $data = DB::table('pembelian')
-            ->join('users', 'pembelian.user_id', '=', 'users.id')
-            ->where('pembelian.status', 'bayar')
-            ->whereNotIn('pembelian.id', function ($query) {
-                $query->select('pembelian_id')
-                    ->from('pengiriman_email');
-            })
-            ->select(
-                'pembelian.id',
-                'pembelian.no_faktur',
-                'users.email',
-                'pembelian.user_id'
-            )
-            ->first();
+        $status_pesan = "";
 
         if ($data) {
-
             $id = $data->id;
             $no_faktur = $data->no_faktur;
             $email = $data->email;
+            $nama_penerima = $data->nama_user;
+            $nama_pegawai = $data->nama_pegawai;
 
-            // Detail produk pembelian
-            $barang = DB::table('pembelian')
-                ->join('pembelian_produk', 'pembelian.id', '=', 'pembelian_produk.pembelian_id')
-                ->join('produk', 'pembelian_produk.produk_id', '=', 'produk.id')
-                ->join('users', 'pembelian.user_id', '=', 'users.id')
+            // 2. Ambil detail layanan untuk isi tabel invoice
+            $layanan = DB::table('pendapatan_jasa')
+                        ->join('pakets', 'pendapatan_jasa.paket_id', '=', 'pakets.id')
+                        ->select(
+                            'pakets.deskripsi', 
+                            'pendapatan_jasa.harga_paket', 
+                            'pendapatan_jasa.jml',
+                            DB::raw('(pendapatan_jasa.harga_paket * pendapatan_jasa.jml) as subtotal')
+                        )
+                        ->where('pendapatan_jasa.pendapatan_id', '=', $id) 
+                        ->get();
 
-                ->select(
-                    'pembelian.id',
-                    'pembelian.no_faktur',
-                    'users.name',
-
-                    'produk.nama_produk',
-                    'produk.foto',
-
-                    'pembelian_produk.harga',
-
-                    DB::raw('SUM(pembelian_produk.jumlah) as total_barang'),
-
-                    DB::raw('SUM(pembelian_produk.harga * pembelian_produk.jumlah) as total_belanja')
-                )
-
-                ->where('pembelian.id', $id)
-
-                ->groupBy(
-                    'pembelian.id',
-                    'pembelian.no_faktur',
-                    'users.name',
-                    'produk.nama_produk',
-                    'produk.foto',
-                    'pembelian_produk.harga'
-                )
-
-                ->get();
-
-            // Generate PDF
+            // 3. Generate PDF
             $pdf = Pdf::loadView('pdf.invoice', [
                 'no_faktur' => $no_faktur,
-                'nama_pelanggan' => $barang[0]->name ?? '-',
-                'items' => $barang,
-                'total' => $barang->sum('total_belanja'),
+                'nama_pelanggan' => $nama_penerima,
+                'nama_pegawai' => $nama_pegawai,
+                'items' => $layanan,
+                'total' => $layanan->sum('subtotal'),
                 'tanggal' => now()->format('d-M-Y'),
             ]);
 
-            // Data email
+            // 4. Bungkus data untuk Mailable (DISINI PERBAIKANNYA)
+            // Kunci array harus sama dengan yang dipanggil di emails/invoice.blade.php
             $dataAtributPelanggan = [
-                'nama_pelanggan' => $barang[0]->name ?? '-',
+                'nama_pelanggan' => $nama_penerima, // Diubah agar sesuai dengan file blade email
                 'invoice_number' => $no_faktur
             ];
 
-            // Kirim email
-            Mail::to($email)->send(
-                new InvoiceMail(
-                    $dataAtributPelanggan,
-                    $pdf->output()
-                )
-            );
+            // 5. Eksekusi pengiriman
+            Mail::to($email)->send(new InvoiceMail($dataAtributPelanggan, $pdf->output()));
 
-            // Simpan log pengiriman
+            // 6. Catat log agar tidak dikirim ulang
             PengirimanEmail::create([
-                'pembelian_id' => $id,
+                'pendapatan_id' => $id, 
                 'status' => 'sudah terkirim',
                 'tgl_pengiriman_pesan' => now(),
             ]);
 
-            // Kirim email menggunakan Mailable
-            Mail::to($email)->send(new InvoiceMail($dataAtributPelanggan, $pdf->output()));
-
-            // Delay 5 detik sebelum lanjut ke email berikutnya
-            sleep(5);
+            $status_pesan = "Email berhasil dikirim ke: " . $email;
+        } else {
+            $status_pesan = "Tidak ada data yang perlu dikirim (Data pelanggan kosong atau sudah terkirim).";
         }
 
-        return view('autorefresh_email');
+        return view('autorefresh_email', compact('status_pesan'));
     }
 }
