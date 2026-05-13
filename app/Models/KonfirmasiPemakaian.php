@@ -9,12 +9,8 @@ class KonfirmasiPemakaian extends Model
 {
     use HasFactory;
 
-    protected $table = 'konfirmasi_pemakaian';
-
+    // tambahan penyebutan tabel secara eksplisit
+    protected $table = 'konfirmasi_pemakaian'; // Nama tabel eksplisit
+    // proteksi kolom tabel (tidak ada yg diproteksi)
     protected $guarded = [];
-
-    public function pemakaian()
-    {
-        return $this->belongsTo(Pemakaian::class, 'pemakaian_id');
-    }
 }

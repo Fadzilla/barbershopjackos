@@ -16,6 +16,7 @@ return new class extends Migration
         $table->string('nama_produk'); // Nama produk
         $table->enum('status', ['Tersedia', 'Habis']); // Status produk
         $table->text('deskripsi_produk'); // Deskripsi produk
+        $table->string('stok')->default(0);
         $table->date('tanggal_masuk'); // Tanggal input 
         $table->string('foto_produk'); // Upload foto (jpg/png) s
         $table->timestamps();

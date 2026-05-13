@@ -39,3 +39,7 @@ Route::get('/ubahpassword', [App\Http\Controllers\AuthController::class, 'ubahpa
 Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 'prosesubahpassword'])
     ->middleware('pengguna')
 ;
+
+//proses kirim email konfirmasi pemakaian
+use     App\Http\Controllers\PengirimanEmailController;
+Route::get('/proses-kirim-email-konfirmasi-pemakaian', [PengirimanEmailController::class, 'proses_kirim_email_konfirmasi_pemakaian']);

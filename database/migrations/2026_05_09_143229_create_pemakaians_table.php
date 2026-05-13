@@ -13,23 +13,14 @@ return new class extends Migration
     {
         Schema::create('pemakaian', function (Blueprint $table) {
             $table->id();
-
-            // Relasi ke pegawai (yang pakai barang)
-            $table->foreignId('pegawai_id')
-                  ->constrained('pegawai')
-                  ->onDelete('cascade');
-
-            $table->string('no_pemakaian'); 
-            $table->string('status'); 
-            $table->datetime('tgl'); 
-
-            // nilai total pemakaian
-            $table->decimal('total', 15, 2);
-
-            $table->text('keterangan')->nullable();
-
+            $table->foreignId('pegawai_id')->constrained('pegawai')->cascadeOnDelete();
+            $table->string('nomer_pemakaian');
+            $table->date('tanggal_pakai');
+            $table->decimal('total_pemakaian', 15, 2)->nullable();
+            $table->text('Keterangan')->nullable();
             $table->timestamps();
         });
+    
     }
 
     /**

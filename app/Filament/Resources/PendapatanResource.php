@@ -37,7 +37,12 @@ use App\Models\PendapatanJasa;
 // DB
 use Illuminate\Support\Facades\DB;
 // untuk dapat menggunakan action
-use Filament\Forms\Components\Actions\Action;
+//use Filament\Forms\Components\Actions\Action;
+
+// tambahan untuk tombol unduh pdf
+use Filament\Tables\Actions\Action; //untuk dapat menggunakan action
+use Barryvdh\DomPDF\Facade\Pdf; // Kalau kamu pakai DomPDF
+use Illuminate\Support\Facades\Storage;
 
 class PendapatanResource extends Resource
 {
@@ -260,6 +265,25 @@ class PendapatanResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+            ])
+            // tombol tambahan
+            ->headerActions([
+                // tombol tambahan export pdf
+                // ✅ Tombol Unduh PDF
+                Action::make('downloadPdf')
+                ->label('Unduh PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->action(function () {
+                    $pendapatan = Pendapatan::all();
+
+                    $pdf = Pdf::loadView('pdf.pendapatan', ['pendapatan' => $pendapatan]);
+
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        'pendapatan-list.pdf'
+                    );
+                })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

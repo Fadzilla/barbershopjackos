@@ -13,15 +13,12 @@ return new class extends Migration
     {
         Schema::create('konfirmasi_pemakaian', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('pemakaian_id')
-                  ->constrained('pemakaian')
-                  ->onDelete('cascade');
-
-            $table->dateTime('tgl_konfirmasi')->nullable();
-            $table->string('status'); 
-            $table->text('catatan')->nullable(); 
-            $table->string('disetujui_oleh')->nullable(); 
+            $table->foreignId('pemakaian_id') ->constrained('pemakaian')->onDelete('cascade');
+            $table->date('tgl_konfirmasi');
+            $table->enum('status_konfirmasi', ['Pending','Disetujui','Ditolak'])->default('Pending');
+            $table->decimal('total_pemakaian', 15, 2)->default(0);
+            $table->text('keterangan')->nullable();
+            $table->dateTime('waktu_konfirmasi')->nullable();
             $table->timestamps();
         });
     }
