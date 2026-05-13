@@ -68,7 +68,10 @@ Route::get('/ubahpassword', [App\Http\Controllers\AuthController::class, 'ubahpa
     ->middleware('customer')
     ->name('ubahpassword');
 Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 'prosesubahpassword'])
+    ->middleware('customer')
 ;
+// prosesubahpassword
+
 
 // tes notifikasi WA
 Route::get('/tes-wa', [App\Http\Controllers\NotificationController::class, 'kirimNotifikasi']);
