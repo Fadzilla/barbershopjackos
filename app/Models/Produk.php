@@ -8,14 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Produk extends Model
 {
     use HasFactory;
-
-    protected $table = 'produks';
-
-    protected $guarded = [];
-
-    // Relasi ke detail pembelian produk
-    public function detailPembelianProduks()
-    {
-        return $this->hasMany(DetailPembelianProduk::class);
-    }
+    protected $table = 'produks'; // Nama tabel eksplisit
+    protected $guarded = []; // Mengizinkan semua field diisi
 }
