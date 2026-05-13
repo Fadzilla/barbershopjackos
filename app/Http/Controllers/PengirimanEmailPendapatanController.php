@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\PengirimanEmail; 
+use App\Models\PengirimanEmailPendapatan; 
 use Illuminate\Support\Facades\DB; 
 use Illuminate\Support\Facades\Mail; 
-use App\Mail\InvoiceMail; 
+use App\Mail\InvoiceMailPendapatan; 
 use Barryvdh\DomPDF\Facade\Pdf; 
 
-class PengirimanEmailController extends Controller
+class PengirimanEmailPendapatanController extends Controller
 {
     public static function proses_kirim_email_pembayaran(){
         
@@ -71,10 +71,10 @@ class PengirimanEmailController extends Controller
             ];
 
             // 5. Eksekusi pengiriman
-            Mail::to($email)->send(new InvoiceMail($dataAtributPelanggan, $pdf->output()));
+            Mail::to($email)->send(new InvoiceMailPendapatan($dataAtributPelanggan, $pdf->output()));
 
             // 6. Catat log agar tidak dikirim ulang
-            PengirimanEmail::create([
+            PengirimanEmailPendapatan::create([
                 'pendapatan_id' => $id, 
                 'status' => 'sudah terkirim',
                 'tgl_pengiriman_pesan' => now(),

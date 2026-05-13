@@ -40,8 +40,8 @@ Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 
     ->middleware('pengguna');
 
 // proses pengiriman email
-use App\Http\Controllers\PengirimanEmailController;
-Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailController::class, 'proses_kirim_email_pembayaran']);
+use App\Http\Controllers\PengirimanEmailPendapatanController;
+Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailPendapatanController::class, 'proses_kirim_email_pembayaran']);
 
 // untuk tes apriori
 use App\Http\Controllers\AprioriTestController;
