@@ -19,10 +19,3 @@ class PengirimanEmail extends Model
         return $this->belongsTo(pembelian_produk::class, 'pembelian_produk_id');
     }
 }
-
-    // relasi ke tabel pendapatan
-    public function pendapatan()
-    {
-        return $this->belongsTo(Pendapatan::class, 'pendapatan_id');
-    }
-}

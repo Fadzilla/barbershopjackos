@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('pelanggan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); 
             $table->string('kode_pelanggan');
             $table->string('nama_pelanggan');
             $table->string('no_hp');

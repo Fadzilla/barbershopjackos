@@ -11,7 +11,7 @@
             <tr>
                 <td class="border border-gray-300 px-4 py-2">{{ $pembayaran->no_faktur }}</td>
                 <td class="border border-gray-300 px-4 py-2">{{ $pembayaran->tgl }}</td>
-                <td class="border border-gray-300 px-4 py-2">Rp{{ number_format($pembayaran->total, 0, ',', '.') }}</td>
+                <td class="border border-gray-300 px-4 py-2">Rp{{ number_format($pembayaran->tagihan, 0, ',', '.') }}</td>
             </tr>
         @endforeach
     </tbody>
