@@ -11,3 +11,14 @@ class Produk extends Model
     protected $table = 'produk'; // Nama tabel eksplisit
     protected $guarded = []; // Mengizinkan semua field diisi
 }
+
+    protected $table = 'produks';
+
+    protected $guarded = [];
+
+    // Relasi ke detail pembelian produk
+    public function detailPembelianProduks()
+    {
+        return $this->hasMany(DetailPembelianProduk::class);
+    }
+}

@@ -1,7 +1,7 @@
 <?php
 
 $page = $_SERVER['PHP_SELF'];
-$sec = "60";
+$sec = "10";
 date_default_timezone_set('Asia/Jakarta');
 
 ?>
