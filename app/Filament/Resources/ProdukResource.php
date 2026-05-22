@@ -49,8 +49,17 @@ class ProdukResource extends Resource
                     ])
                     ->required(),
 
+                // ✅ TAMBAHAN STOK (TIDAK MERUBAH YANG LAIN)
                 TextInput::make('stok')
+                    ->label('Stok Produk')
                     ->numeric()
+                    ->required()
+                    ->minValue(0),
+
+                TextInput::make('harga_produk')
+                    ->label('Harga Produk')
+                    ->numeric()
+                    ->prefix('Rp')
                     ->required(),
 
                 DatePicker::make('tanggal_masuk')
@@ -92,6 +101,19 @@ class ProdukResource extends Resource
                 TextColumn::make('deskripsi_produk')
                     ->limit(50),
 
+                // ✅ TAMBAHAN STOK (TIDAK MERUBAH YANG LAIN)
+                TextColumn::make('stok')
+                    ->label('Stok')
+                    ->sortable()
+                    ->badge()
+                    ->color(fn ($state) => $state <= 5 ? 'danger' : 'success'),
+
+                TextColumn::make('harga_produk')
+                    ->label('Harga Produk')
+                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
+            ])
+            ->filters([
+                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

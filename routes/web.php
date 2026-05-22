@@ -73,9 +73,13 @@ Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 
 // prosesubahpassword
 
 
-// tes notifikasi WA
-Route::get('/tes-wa', [App\Http\Controllers\NotificationController::class, 'kirimNotifikasi']);
+use App\Http\Controllers\PengirimanEmailPenjualanController;
+Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailController::class, 'proses_kirim_email_pembayaran']);
 
+// untuk tes apriori
+use App\Http\Controllers\AprioriTestController;
+Route::get('/test-apriori', [AprioriTestController::class, 'test']);
+Route::get('/test-apriori-2', [AprioriTestController::class, 'tes2']);
 
 // contoh sampel sederhana untuk mengetes midtrans
 Route::get('/cekmidtrans', [App\Http\Controllers\CobaMidtransController::class, 'cekmidtrans']);
