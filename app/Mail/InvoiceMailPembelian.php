@@ -12,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 // tambahan agar bisa mengirim attachment
 use Illuminate\Mail\Mailables\Attachment;
 
-class InvoiceMail extends Mailable
+class InvoiceMailPembelian extends Mailable
 {
     use Queueable, SerializesModels;
 
