@@ -74,7 +74,7 @@ class PengirimanEmailPembelianController extends Controller
             // Generate PDF
             $pdf = Pdf::loadView('pdf.invoice', [
                 'no_faktur' => $no_faktur,
-                'nama_pembeli' => $barang[0]->name ?? '-',
+                'nama_pelanggan' => $barang[0]->name ?? '-',
                 'items' => $barang,
                 'total' => $barang->sum('total_belanja'),
                 'tanggal' => now()->format('d-M-Y'),
@@ -82,7 +82,7 @@ class PengirimanEmailPembelianController extends Controller
 
             // Data email
             $dataAtributPelanggan = [
-                'customer_name' => $barang[0]->name ?? '-',
+                'nama_pelanggan' => $barang[0]->name ?? '-',
                 'invoice_number' => $no_faktur
             ];
 
@@ -100,12 +100,20 @@ class PengirimanEmailPembelianController extends Controller
                 'status' => 'sudah terkirim',
                 'tgl_pengiriman_pesan' => now(),
             ]);
+<<<<<<< HEAD:app/Http/Controllers/PengirimanEmailPembelianController.php
         }
             // Kirim email menggunakan Mailable
              Mail::to($email)->send(new InvoiceMailPembelian($dataAtributPelanggan,$pdf->output()));
+=======
+>>>>>>> ddf2c200108f6ae2f083791715d3d56bd9065019:app/Http/Controllers/PengirimanEmailController.php
 
-             // Delay 5 detik sebelum lanjut ke email berikutnya
-             sleep(5);
+            // Kirim email menggunakan Mailable
+            Mail::to($email)->send(new InvoiceMail($dataAtributPelanggan, $pdf->output()));
+
+            // Delay 5 detik sebelum lanjut ke email berikutnya
+            sleep(5);
+        }
+
         return view('autorefresh_email');
     }
 }
