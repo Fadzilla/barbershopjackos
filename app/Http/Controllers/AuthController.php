@@ -31,9 +31,9 @@ class AuthController extends Controller
         // if (Auth::attempt($credentials)) {
 
         // buka untuk keperluan manajemen user
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'user_group' => 'pengguna'])) {
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'user_group' => 'customer'])) {
             $request->session()->regenerate();
-            return redirect()->intended('/dashboard');
+            return redirect()->intended('/depan');
             // return redirect()->intended('/perusahaan');
         }
 
@@ -66,6 +66,6 @@ class AuthController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        return redirect()->route('dashboard')->with('success', 'Password berhasil diperbarui!');
+        return redirect()->route('depan')->with('success', 'Password berhasil diperbarui!');
     }
 }

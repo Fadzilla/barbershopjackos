@@ -75,7 +75,7 @@ class UserResource extends Resource
                 BadgeColumn::make('user_group')
                     ->color(fn ($state) => match ($state) {
                         'admin' => 'warning',
-                        'pengguna' => 'success',
+                        'customer' => 'success',
                         default => 'success',
                     }),
                 Tables\Columns\TextColumn::make('created_at')->searchable(),

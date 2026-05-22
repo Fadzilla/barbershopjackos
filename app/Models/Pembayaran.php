@@ -13,5 +13,4 @@ class Pembayaran extends Model
     protected $table = 'pembayaran'; // Nama tabel eksplisit
     // proteksi kolom tabel (tidak ada yg diproteksi)
     protected $guarded = [];
-    
 }

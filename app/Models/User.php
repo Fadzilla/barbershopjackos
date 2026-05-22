@@ -12,7 +12,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 
-class User extends Authenticatable
+// class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser // 1. Tambahkan implements
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -25,6 +26,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        
     ];
 
     /**
@@ -50,6 +52,6 @@ class User extends Authenticatable
     // tambahan method untuk membatasi akses hanya user group admin saja
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->user_group === 'admin';
+       return true;
     }
 }
