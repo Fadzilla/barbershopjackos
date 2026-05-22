@@ -95,16 +95,9 @@ use App\Http\Controllers\CobaMidtransController;
 // Route untuk menampilkan halaman tombol bayar & simulasi
 Route::get('/cek-midtrans', [CobaMidtransController::class, 'cekmidtranscallback']);
 
-// penjualan dan pembayaran customer
-Route::post('/tambah', [App\Http\Controllers\KeranjangController::class, 'tambahKeranjang'])->middleware('customer');
-Route::get('/lihatkeranjang', [App\Http\Controllers\KeranjangController::class, 'lihatkeranjang'])->middleware('customer');
-Route::delete('/hapus/{barang_id}', [App\Http\Controllers\KeranjangController::class, 'hapus'])->middleware('customer');
-Route::get('/lihatriwayat', [App\Http\Controllers\KeranjangController::class, 'lihatriwayat'])->middleware('customer');
-// untuk autorefresh pembayaran
-Route::get('/cek_status_pembayaran_pg', [App\Http\Controllers\KeranjangController::class, 'cek_status_pembayaran_pg']);
 // proses pengiriman email
-use App\Http\Controllers\PengirimanEmailController;
-Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailController::class, 'proses_kirim_email_pembayaran']);
+use App\Http\Controllers\PengirimanEmailPembelianController;
+Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailPembelianController::class, 'proses_kirim_email_pembayaran']);
 use App\Http\Controllers\PDFController;
 
 Route::get('/paket-pdf', [PDFController::class, 'paketPdf']);
