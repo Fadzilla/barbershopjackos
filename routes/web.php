@@ -72,9 +72,15 @@ Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 
 ;
 // prosesubahpassword
 
+<<<<<<< HEAD
+// proses pengiriman email
+use App\Http\Controllers\PengirimanEmailPendapatanController;
+Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailPendapatanController::class, 'proses_kirim_email_pembayaran']);
+=======
 
 use App\Http\Controllers\PengirimanEmailPenjualanController;
 Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailController::class, 'proses_kirim_email_pembayaran']);
+>>>>>>> 1bb20999041038e07537bf561e10bebe9dbdd15c
 
 // untuk tes apriori
 use App\Http\Controllers\AprioriTestController;
