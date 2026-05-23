@@ -135,9 +135,15 @@ class ProdukResource extends Resource
 
                 TextColumn::make('deskripsi_produk')
                     ->label('Deskripsi')
-                    ->html()
-                    ->limit(40),
+                    ->html() // Agar format teks dari RichEditor muncul rapi
+                    ->limit(50),
 
+                // ✅ TAMBAHAN STOK (TIDAK MERUBAH YANG LAIN)
+                TextColumn::make('stok')
+                    ->label('Stok')
+                    ->sortable()
+                    ->badge()
+                    ->color(fn ($state) => $state <= 5 ? 'danger' : 'success'),
             ])
 
             ->filters([

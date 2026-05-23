@@ -11,24 +11,13 @@ use App\Models\Retur;
 class Produk extends Model
 {
     use HasFactory;
+    protected $table = 'produks'; // Nama tabel eksplisit
+    protected $guarded = []; // Mengizinkan semua field diisi
 
-    protected $table = 'produk';
 
-    protected $fillable = [
-        'nama_produk',
-        'status',
-        'stok',
-        'harga_produk',
-        'tanggal_masuk',
-        'foto_produk',
-        'deskripsi_produk',
-    ];
-
-    /**
-     * Relasi ke retur
-     */
-    public function returs()
+// Relasi dengan tabel relasi many to many nya
+    public function pendapatanJasa()
     {
-        return $this->hasMany(Retur::class, 'produk_id');
-  }
+        return $this->hasMany(PendapatanJasa::class, 'pakets_id');
+    }
 }

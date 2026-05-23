@@ -40,6 +40,14 @@ Route::get('/ubahpassword', [App\Http\Controllers\AuthController::class, 'ubahpa
 Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 'prosesubahpassword'])
     ->middleware('customer')
 ;
+
+//proses kirim email konfirmasi pemakaian
+use     App\Http\Controllers\PDFController;
+Route::get('/pemakaianpdf', [PDFController::class, 'pemakaianpdf']);
+
+//proses pengiriman email
+use App\Http\Controllers\PengirimanEmailPemakaianController;
+Route::get('/pengiriman_email_pemakaian', [PengirimanEmailPemakaianController::class, 'proses_kirim_email_pemakaian']);
 // prosesubahpassword
 
 // proses pengiriman email
