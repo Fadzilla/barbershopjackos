@@ -8,6 +8,7 @@ use App\Models\Produk;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -39,11 +40,9 @@ class ProdukResource extends Resource
             ->schema([
 
                 TextInput::make('nama_produk')
-                    ->label('Nama Produk')
                     ->required(),
 
                 Radio::make('status')
-                    ->label('Status Ketersediaan')
                     ->options([
                         'Tersedia' => 'Tersedia',
                         'Habis' => 'Habis',
@@ -80,15 +79,13 @@ class ProdukResource extends Resource
 
                 // tanggal masuk
                 DatePicker::make('tanggal_masuk')
-                    ->label('Tanggal Masuk Produk')
                     ->required(),
 
                 // foto
                 FileUpload::make('foto_produk')
                     ->label('Foto Produk')
                     ->image()
-                    ->directory('produk-images')
-                    ->required(),
+                    ->directory('produk-images'),
 
                 // deskripsi
                 RichEditor::make('deskripsi_produk')
@@ -104,16 +101,16 @@ class ProdukResource extends Resource
             ->columns([
 
                 TextColumn::make('nama_produk')
-                    ->label('Nama Produk')
                     ->searchable()
                     ->sortable(),
 
                 BadgeColumn::make('status')
-                    ->label('Status')
                     ->colors([
                         'success' => 'Tersedia',
                         'danger' => 'Habis',
                     ]),
+
+                TextColumn::make('stok'),
 
                 ImageColumn::make('foto_produk')
                     ->label('Foto')

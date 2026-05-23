@@ -26,6 +26,7 @@ class User extends Authenticatable implements FilamentUser // 1. Tambahkan imple
         'name',
         'email',
         'password',
+        
     ];
 
     /**
