@@ -40,4 +40,9 @@ class Pelanggan extends Model
         return $this->hasMany(Pendapatan::class, 'pelanggan_id');
     }
 
+    //relasi ke tabel penjualan
+     public function penjualan()
+    {
+        return $this->hasMany(Penjualan::class, 'penjualan_id');
+    }
 }

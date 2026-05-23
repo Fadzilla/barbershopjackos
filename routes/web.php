@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PaketController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,28 +15,30 @@ use App\Http\Controllers\PaketController;
 
 Route::get('/', function () {
     // return view('welcome');
-    return view('login');
+    // return view('login');
+    return redirect('/login');
 });
 
-Route::resource('paket', PaketController::class);
+// proses pengiriman email
+use App\Http\Controllers\PengirimanEmailReturController;
+Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailReturController::class, 'proses_kirim_email_pembayaran']);
 
-// login pengguna
-Route::get('/dashboard', [App\Http\Controllers\UserDashboardController::class, 'index'])->middleware('pengguna')->name('dashboard');
-Route::get('/login', [App\Http\Controllers\AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
-Route::get('/logout', function () {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect('/login');
-})->name('logout');
+// contoh route yang mengarah ke konten statis
+Route::get('/selamat', function () {
+    return view('selamat',['nama'=>'Farel Prayoga']);
+});
+
+// contoh route yang mengarah ke konten statis
+Route::get('/utama', function () {
+    return view('layout',['nama'=>'Farel Prayoga','title'=>'Selamat Datang']);
+});
 
 // untuk ubah password
 Route::get('/ubahpassword', [App\Http\Controllers\AuthController::class, 'ubahpassword'])
-    ->middleware('pengguna')
+    ->middleware('customer')
     ->name('ubahpassword');
 Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 'prosesubahpassword'])
-    ->middleware('pengguna')
+    ->middleware('customer')
 ;
 
 //proses kirim email konfirmasi pemakaian
@@ -47,3 +48,19 @@ Route::get('/pemakaianpdf', [PDFController::class, 'pemakaianpdf']);
 //proses pengiriman email
 use App\Http\Controllers\PengirimanEmailPemakaianController;
 Route::get('/pengiriman_email_pemakaian', [PengirimanEmailPemakaianController::class, 'proses_kirim_email_pemakaian']);
+// prosesubahpassword
+
+// proses pengiriman email
+use App\Http\Controllers\PengirimanEmailPendapatanController;
+Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailPendapatanController::class, 'proses_kirim_email_pembayaran']);
+
+
+// contoh menggunakan callback
+use App\Http\Controllers\CobaMidtransController;
+
+// proses pengiriman email
+use App\Http\Controllers\PengirimanEmailPembelianController;
+Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailPembelianController::class, 'proses_kirim_email_pembayaran']);
+use App\Http\Controllers\PDFController;
+
+Route::get('/paket-pdf', [PDFController::class, 'paketPdf']);

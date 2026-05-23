@@ -30,13 +30,13 @@ class CreatePendapatan extends CreateRecord
     {
         return [
             Actions\Action::make('bayar')
-                ->label('Bayar')
+                ->label('selesai')
                 ->color('success')
                 ->action(fn () => $this->simpanPembayaran())
                 ->requiresConfirmation()
-                ->modalHeading('Konfirmasi Pembayaran')
-                ->modalDescription('Apakah Anda yakin ingin menyimpan pembayaran ini?')
-                ->modalButton('Ya, Bayar'),
+                ->modalHeading('Konfirmasi Selesai')
+                ->modalDescription('Apakah Anda yakin ingin menyelesaikan transaksi ini?')
+                ->modalButton('iya'),
         ];
     }
 
@@ -60,8 +60,11 @@ class CreatePendapatan extends CreateRecord
 
         // Notifikasi sukses
         Notification::make()
-            ->title('Pembayaran Berhasil!')
+            ->title('Transaksi Selesai!')
             ->success()
             ->send();
+
+        // 5.  untuk kembali ke halaman index (view) pendapatan
+        $this->redirect($this->getResource()::getUrl('index'));
     }
 }

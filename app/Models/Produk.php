@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// relasi
+use App\Models\Retur;
+
 class Produk extends Model
 {
     use HasFactory;
