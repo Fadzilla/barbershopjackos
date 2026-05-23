@@ -2,10 +2,9 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Invoice {{ $nomer_pemakaian }}</title>
+    <title>Pemakaian {{ $nomer_pemakaian }}</title>
 
     <style>
-
         body {
             font-family: sans-serif;
             font-size: 12px;
@@ -47,7 +46,6 @@
             margin-top: 10px;
             line-height: 1.5;
         }
-
     </style>
 </head>
 
@@ -56,30 +54,24 @@
     <div class="invoice-box">
 
         <div class="title">
-            INVOICE PEMAKAIAN
+            LAPORAN PEMAKAIAN PRODUK
         </div>
 
         <div class="info">
-
-            <strong>Nomor Pemakaian:</strong>
-            {{ $nomer_pemakaian }}
-            <br>
+            <strong>Nomor Pemakaian:</strong> {{ $nomer_pemakaian }} <br>
 
             <strong>Nama Pegawai:</strong>
-            {{ $nama_pegawai }}
-            <br>
+            {{ $nama_pegawai }} <br>
 
             <strong>Tanggal:</strong>
             {{ $tanggal }}
-
         </div>
 
         <table>
-
             <thead>
                 <tr>
                     <th>Produk</th>
-                    <th>Qty</th>
+                    <th>Jumlah</th>
                     <th>Tanggal Pakai</th>
                 </tr>
             </thead>
@@ -89,10 +81,7 @@
                 @foreach($items as $item)
 
                 <tr>
-
-                    <td>
-                        {{ $item->nama_produk }}
-                    </td>
+                    <td>{{ $item->nama_produk }}</td>
 
                     <td>
                         {{ $item->total_produk }}
@@ -101,29 +90,27 @@
                     <td>
                         {{ $item->tanggal_pakai }}
                     </td>
-
                 </tr>
 
                 @endforeach
 
                 <tr>
-
                     <td colspan="2" class="text-right">
                         <strong>Total Pemakaian</strong>
                     </td>
 
                     <td>
-                        <strong>{{ $total }}</strong>
+                        <strong>
+                            {{ $items->sum('jumlah') }}
+                        </strong>
                     </td>
-
                 </tr>
 
             </tbody>
-
         </table>
 
         <p style="margin-top: 30px;">
-            Terima kasih telah menggunakan sistem pemakaian produk.
+            Data pemakaian produk telah berhasil diproses.
         </p>
 
     </div>

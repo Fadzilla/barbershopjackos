@@ -41,5 +41,9 @@ Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 
 ;
 
 //proses kirim email konfirmasi pemakaian
-use     App\Http\Controllers\PengirimanEmailController;
-Route::get('/proses-kirim-email-konfirmasi-pemakaian', [PengirimanEmailController::class, 'proses_kirim_email_konfirmasi_pemakaian']);
+use     App\Http\Controllers\PDFController;
+Route::get('/pemakaianpdf', [PDFController::class, 'pemakaianpdf']);
+
+//proses pengiriman email
+use App\Http\Controllers\PengirimanEmailPemakaianController;
+Route::get('/pengiriman_email_pemakaian', [PengirimanEmailPemakaianController::class, 'proses_kirim_email_pemakaian']);

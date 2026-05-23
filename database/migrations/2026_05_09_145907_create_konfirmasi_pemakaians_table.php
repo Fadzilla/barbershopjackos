@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('tgl_konfirmasi');
             $table->enum('status_konfirmasi', ['Pending','Disetujui','Ditolak'])->default('Pending');
             $table->decimal('total_pemakaian', 15, 2)->default(0);
-            $table->text('keterangan')->nullable();
+            $table->text('Keterangan')->nullable();
             $table->dateTime('waktu_konfirmasi')->nullable();
             $table->timestamps();
         });

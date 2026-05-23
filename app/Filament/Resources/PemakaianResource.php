@@ -23,6 +23,11 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Tables\Filters\SelectFilter;
 
+// tambahan export
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\Action;
+use App\Filament\Exports\PemakaianExporter;
+
 // model
 use App\Models\Pegawai;
 use App\Models\Produk;
@@ -31,6 +36,10 @@ use App\Models\KonfirmasiPemakaian;
 
 // DB
 use Illuminate\Support\Facades\DB;
+
+// pdf
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class PemakaianResource extends Resource
 {
@@ -44,70 +53,59 @@ class PemakaianResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
+        return $form->schema([
 
-                Wizard::make([
+            Wizard::make([
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | STEP 1
-                    |--------------------------------------------------------------------------
-                    */
-                    Wizard\Step::make('Pemakaian')
-                        ->schema([
+                Wizard\Step::make('Pemakaian')
+                    ->schema([
 
-                            Forms\Components\Section::make('Data Pemakaian')
-                                ->icon('heroicon-m-document-text')
-                                ->schema([
+                        Forms\Components\Section::make('Data Pemakaian')
+                            ->icon('heroicon-m-document-text')
+                            ->schema([
 
-                                    TextInput::make('nomer_pemakaian')
-                                        ->default(fn () => Pemakaian::getNomerPemakaian())
-                                        ->label('Nomor Pemakaian')
-                                        ->required()
-                                        ->readonly(),
+                                TextInput::make('nomer_pemakaian')
+                                    ->default(fn() => Pemakaian::getNomerPemakaian())
+                                    ->label('Nomor Pemakaian')
+                                    ->required()
+                                    ->readonly(),
 
-                                    DateTimePicker::make('tanggal_pakai')
-                                        ->default(now())
-                                        ->required(),
+                                DateTimePicker::make('tanggal_pakai')
+                                    ->default(now())
+                                    ->required(),
 
-                                    Select::make('pegawai_id')
-                                        ->label('Pegawai')
-                                        ->options(
-                                            Pegawai::pluck('nama_pegawai', 'id')->toArray()
-                                        )
-                                        ->required()
-                                        ->searchable()
-                                        ->placeholder('Pilih Pegawai'),
+                                Select::make('pegawai_id')
+                                    ->label('Pegawai')
+                                    ->options(Pegawai::pluck('nama_pegawai', 'id')->toArray())
+                                    ->required()
+                                    ->searchable()
+                                    ->placeholder('Pilih Pegawai'),
 
-                                    TextInput::make('total_pemakaian')
-                                        ->default(0)
-                                        ->hidden(),
+                                TextInput::make('total_pemakaian')
+                                    ->default(0)
+                                    ->hidden(),
 
-                                    TextInput::make('status')
-                                        ->default('Pending')
-                                        ->hidden(),
+                                TextInput::make('Keterangan')
+                                    ->label('Keterangan')
+                                    ->nullable()
+                                    ->columnSpanFull(),
 
+                                TextInput::make('status')
+                                    ->default('Pending')
+                                    ->hidden(),
+                            ])
+                            ->columns(3)
+                            ->collapsible(),
+                    ]),
 
-                                ])
-                                ->columns(3)
-                                ->collapsible(),
+                Wizard\Step::make('Pilih Produk')
+                    ->schema([
 
-                        ]),
+                        Repeater::make('items')
+                            ->dehydrated(false)
+                            ->schema([
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | STEP 2
-                    |--------------------------------------------------------------------------
-                    */
-                    Wizard\Step::make('Pilih Produk')
-                        ->schema([
-
-                            Repeater::make('items')
-                                ->relationship('pemakaianProduk')
-                                ->schema([
-
-                                    Select::make('produk_id')
+                                Select::make('produk_id')
                                     ->label('Produk')
                                     ->options(Produk::pluck('nama_produk', 'id')->toArray())
                                     ->required()
@@ -120,163 +118,104 @@ class PemakaianResource extends Resource
                                     ->afterStateHydrated(function ($state, $set) {
                                         $produk = Produk::find($state);
                                         $set('stok', $produk ? $produk->stok : 0);
-                                }),
+                                    }),
 
-                                    TextInput::make('stok')
-                                        ->readonly()
-                                        ->dehydrated(false),
+                                TextInput::make('stok')
+                                    ->readonly()
+                                    ->dehydrated(false),
 
-                                    TextInput::make('jumlah')
-                                        ->numeric()
-                                        ->default(1)
-                                        ->required()
-                                        ->reactive()
-                                        ->live()
-                                        ->afterStateUpdated(function ($state, $set, $get) {
+                                TextInput::make('jumlah')
+                                    ->numeric()
+                                    ->default(1)
+                                    ->required()
+                                    ->reactive()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        $totalPemakaian = collect($get('../../items'))
+                                            ->sum(fn($item) => (int) ($item['jumlah'] ?? 0));
 
-                                            $totalPemakaian = collect($get('../../items'))
-                                                ->sum(fn ($item) => (int) ($item['jumlah'] ?? 0));
+                                        $set('../../total_pemakaian', $totalPemakaian);
+                                    }),
 
-                                            $set('../../total_pemakaian', $totalPemakaian);
-                                        }),
+                                DatePicker::make('tanggal_pakai')
+                                    ->default(today())
+                                    ->required(),
+                            ])
+                            ->columns(['md' => 5])
+                            ->addable()
+                            ->deletable()
+                            ->reorderable()
+                            ->minItems(1)
+                            ->required()
+                            ->createItemButtonLabel('Tambah Produk'),
 
-                                    DatePicker::make('tanggal_pakai')
-                                        ->default(today())
-                                        ->required(),
+                        Forms\Components\Actions::make([
 
-                                ])
+                            Forms\Components\Actions\Action::make('Simpan Sementara')
+                                ->action(function ($get) {
 
-                                ->columns([
-                                    'md' => 5,
-                                ])
+                                    $pemakaian = Pemakaian::updateOrCreate(
+                                        ['nomer_pemakaian' => $get('nomer_pemakaian')],
+                                        [
+                                            'pegawai_id' => $get('pegawai_id'),
+                                            'tanggal_pakai' => $get('tanggal_pakai'),
+                                            'Keterangan' => $get('Keterangan'),
+                                            'total_pemakaian' => 0,
+                                        ]
+                                    );
 
-                                ->addable()
-                                ->deletable()
-                                ->reorderable()
-                                ->minItems(1)
-                                ->required()
-                                ->createItemButtonLabel('Tambah Produk'),
+                                    foreach ($get('items') as $item) {
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | Tombol Simpan
-                            |--------------------------------------------------------------------------
-                            */
-
-                            Forms\Components\Actions::make([
-
-                                Forms\Components\Actions\Action::make('Simpan Sementara')
-
-                                    ->action(function ($get) {
-
-                                        $pemakaian = Pemakaian::updateOrCreate(
-
+                                        PemakaianProduk::updateOrCreate(
                                             [
-                                                'nomer_pemakaian' => $get('nomer_pemakaian')
+                                                'pemakaian_id' => $pemakaian->id,
+                                                'produk_id' => $item['produk_id']
                                             ],
-
                                             [
-                                                'pegawai_id' => $get('pegawai_id'),
-                                                'tanggal_pakai' => $get('tanggal_pakai'),
-                                                'total_pemakaian' => 0,
+                                                'jumlah' => $item['jumlah'],
+                                                'tanggal_pakai' => $item['tanggal_pakai'],
                                             ]
                                         );
 
-                                        /*
-                                        |--------------------------------------------------------------------------
-                                        | Simpan Detail Produk
-                                        |--------------------------------------------------------------------------
-                                        */
+                                        $produk = Produk::find($item['produk_id']);
 
-                                        foreach ($get('items') as $item) {
-
-                                            PemakaianProduk::updateOrCreate(
-
-                                                [
-                                                    'pemakaian_id' => $pemakaian->id,
-                                                    'produk_id' => $item['produk_id']
-                                                ],
-
-                                                [
-                                                    'jumlah' => $item['jumlah'],
-                                                    'tanggal_pakai' => $item['tanggal_pakai'],
-
-                                                ]
-                                            );
-
-                                            /*
-                                            |--------------------------------------------------------------------------
-                                            | Kurangi stok produk
-                                            |--------------------------------------------------------------------------
-                                            */
-
-                                            $produk = Produk::find($item['produk_id']);
-
-                                            if ($produk) {
-
-                                                $produk->decrement(
-                                                    'stok',
-                                                    $item['jumlah']
-                                                );
-                                            }
+                                        if ($produk) {
+                                            $produk->decrement('stok', $item['jumlah']);
                                         }
+                                    }
 
-                                        /*
-                                        |--------------------------------------------------------------------------
-                                        | Hitung Total
-                                        |--------------------------------------------------------------------------
-                                        */
+                                    $totalPemakaian = PemakaianProduk::where(
+                                        'pemakaian_id',
+                                        $pemakaian->id
+                                    )->sum('jumlah');
 
-                                        $totalPemakaian = PemakaianProduk::where(
-                                            'pemakaian_id',
-                                            $pemakaian->id
-                                        )->sum('jumlah');
+                                    $pemakaian->update([
+                                        'total_pemakaian' => $totalPemakaian
+                                    ]);
+                                })
+                                ->label('Proses')
+                                ->color('primary'),
+                        ])
+                    ]),
 
-                                        $pemakaian->update([
-                                            'total_pemakaian' => $totalPemakaian
-                                        ]);
+                Wizard\Step::make('Konfirmasi')
+                    ->schema([
+                        Placeholder::make('Tabel Konfirmasi')
+                            ->content(fn(Get $get) => view(
+                                'filament.components.pemakaian-table',
+                                [
+                                    'pemakaians' => Pemakaian::where(
+                                        'nomer_pemakaian',
+                                        $get('nomer_pemakaian')
+                                    )->get()
+                                ]
+                            )),
+                    ]),
 
-                                    })
+            ])->columnSpan(3)
 
-                                    ->label('Proses')
-                                    ->color('primary'),
-
-                            ])
-
-                        ]),
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | STEP 3
-                    |--------------------------------------------------------------------------
-                    */
-
-                    Wizard\Step::make('Konfirmasi')
-                        ->schema([
-
-                            Placeholder::make('Tabel Konfirmasi')
-                                ->content(fn (Get $get) => view(
-                                    'filament.components.pemakaian-table',
-                                    [
-                                        'pemakaians' => Pemakaian::where(
-                                            'nomer_pemakaian',
-                                            $get('nomer_pemakaian')
-                                        )->get()
-                                    ]
-                                )),
-
-                        ]),
-
-                ])->columnSpan(3)
-
-            ]);
+        ]);
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | TABLE
-    |--------------------------------------------------------------------------
-    */
 
     public static function table(Table $table): Table
     {
@@ -297,60 +236,72 @@ class PemakaianResource extends Resource
                     ->sortable()
                     ->alignment('end'),
 
+                // ✅ INI YANG KAMU KURANG
+                TextColumn::make('Keterangan')
+                    ->label('Keterangan')
+                    ->limit(50)
+                    ->wrap(),
+
                 TextColumn::make('created_at')
                     ->label('Tanggal')
                     ->dateTime(),
+            ])
 
+            ->headerActions([
+                ExportAction::make()
+                    ->exporter(PemakaianExporter::class)
+                    ->color('success'),
+
+                Action::make('downloadPdf')
+                    ->label('Unduh PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function () {
+                        $pemakaian = Pemakaian::with('pegawai')->get();
+
+                        $pdf = Pdf::loadView('pdf.pemakaian', [
+                            'pemakaian' => $pemakaian
+                        ]);
+
+                        return response()->streamDownload(
+                            fn() => print ($pdf->output()),
+                            'pemakaian-list.pdf'
+                        );
+                    })
             ])
 
             ->filters([
-
                 SelectFilter::make('pegawai_id')
                     ->label('Filter Pegawai')
                     ->relationship('pegawai', 'nama_pegawai')
                     ->searchable()
                     ->preload(),
-
             ])
 
             ->actions([
-
                 Tables\Actions\ViewAction::make(),
-
                 Tables\Actions\EditAction::make(),
-
                 Tables\Actions\DeleteAction::make(),
-
             ])
 
             ->bulkActions([
-
                 Tables\Actions\BulkActionGroup::make([
-
                     Tables\Actions\DeleteBulkAction::make(),
-
                 ]),
-
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [
-
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
-
             'index' => Pages\ListPemakaians::route('/'),
-
             'create' => Pages\CreatePemakaian::route('/create'),
-
             'edit' => Pages\EditPemakaian::route('/{record}/edit'),
-
         ];
     }
 }

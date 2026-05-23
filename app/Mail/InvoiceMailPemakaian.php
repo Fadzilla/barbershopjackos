@@ -12,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 // tambahan agar bisa mengirim attachment
 use Illuminate\Mail\Mailables\Attachment;
 
-class KonfirmasiPemakaianMail extends Mailable
+class InvoiceMailPemakaian extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -41,7 +41,7 @@ class KonfirmasiPemakaianMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Konfirmasi Pemakaian Barbershopjackos',
+            subject: 'Bukti Pemakaian Barbershopjackos',
         );
     }
 
@@ -51,7 +51,7 @@ class KonfirmasiPemakaianMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.konfirmasi_pemakaian',
+            view: 'emails.invoicePemakaian',
             with: [
                 'data' => $this->data,
             ],
@@ -68,7 +68,7 @@ class KonfirmasiPemakaianMail extends Mailable
         // ganti isi return dengan kode program untuk membuat invoice 
         return [
             // tambahkan pemrosesan attachment
-            Attachment::fromData(fn () => $this->pdfContent, 'konfirmasi_pemakaian.pdf')
+            Attachment::fromData(fn () => $this->pdfContent, 'invoice.pdf')
             ->withMime('application/pdf'),
         ];
     }
