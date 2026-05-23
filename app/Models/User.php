@@ -52,6 +52,6 @@ class User extends Authenticatable implements FilamentUser // 1. Tambahkan imple
     // tambahan method untuk membatasi akses hanya user group admin saja
     public function canAccessPanel(Panel $panel): bool
     {
-       return true;
+        return $this->user_group === 'admin';
     }
 }

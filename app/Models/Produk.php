@@ -5,20 +5,30 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// relasi
+use App\Models\Retur;
+
 class Produk extends Model
 {
     use HasFactory;
-    protected $table = 'produk'; // Nama tabel eksplisit
-    protected $guarded = []; // Mengizinkan semua field diisi
-}
 
-    protected $table = 'produks';
+    protected $table = 'produk';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'nama_produk',
+        'status',
+        'stok',
+        'harga_produk',
+        'tanggal_masuk',
+        'foto_produk',
+        'deskripsi_produk',
+    ];
 
-    // Relasi ke detail pembelian produk
-    public function detailPembelianProduks()
+    /**
+     * Relasi ke retur
+     */
+    public function returs()
     {
-        return $this->hasMany(DetailPembelianProduk::class);
-    }
+        return $this->hasMany(Retur::class, 'produk_id');
+  }
 }

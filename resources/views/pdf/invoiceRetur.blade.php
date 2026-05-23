@@ -38,18 +38,18 @@
 </head>
 <body>
     <div class="invoice-box">
-        <div class="title">INVOICE PEMBAYARAN PRODUK - BARBERSHOP JACKOS</div>
+        <div class="title">INVOICE PEMBAYARAN</div>
 
         <div class="info">
             <strong>No Faktur:</strong> {{ $no_faktur }}<br>
-            <strong>Nama Pelanggan:</strong> {{ $nama_pelanggan }}<br>
+            <strong>Nama Pembeli:</strong> {{ $nama_pembeli }}<br>
             <strong>Tanggal:</strong> {{ $tanggal }}
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th>Produk</th>
+                    <th>Barang</th>
                     <th>Qty</th>
                     <th>Harga</th>
                     <th>Subtotal</th>
@@ -58,10 +58,10 @@
             <tbody>
                 @foreach($items as $item)
                 <tr>
-                    <td>{{ $item->nama_produk }}</td>
-                    <td>{{ $item->total_produk }}</td>
+                    <td>{{ $item->nama_barang }}</td>
+                    <td>{{ $item->total_barang }}</td>
                     <td class="text-right">{{ rupiah($item->harga_jual, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ rupiah($item->harga_jual * $item->total_produk, 0, ',', '.') }}</td>
+                    <td class="text-right">{{ rupiah($item->harga_jual * $item->total_barang, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
                 <tr>
@@ -71,7 +71,7 @@
             </tbody>
         </table>
 
-        <p style="margin-top: 30px;">Terima kasih atas kepercayaan Anda di Barbershp Jackos</p>
+        <p style="margin-top: 30px;">Terima kasih atas kepercayaan Anda!</p>
     </div>
 </body>
 </html>

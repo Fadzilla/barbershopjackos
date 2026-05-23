@@ -97,7 +97,6 @@ class PengirimanEmailPendapatanController extends Controller
             ]);
         }
             // Kirim email menggunakan Mailable
-             Mail::to($email)->send(new InvoiceMail($dataAtributPelanggan,$pdf->output()));
 
              // Delay 5 detik sebelum lanjut ke email berikutnya
              sleep(5);

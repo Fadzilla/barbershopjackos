@@ -100,20 +100,15 @@ class PengirimanEmailPembelianController extends Controller
                 'status' => 'sudah terkirim',
                 'tgl_pengiriman_pesan' => now(),
             ]);
-<<<<<<< HEAD:app/Http/Controllers/PengirimanEmailPembelianController.php
         }
             // Kirim email menggunakan Mailable
              Mail::to($email)->send(new InvoiceMailPembelian($dataAtributPelanggan,$pdf->output()));
-=======
->>>>>>> ddf2c200108f6ae2f083791715d3d56bd9065019:app/Http/Controllers/PengirimanEmailController.php
 
             // Kirim email menggunakan Mailable
             Mail::to($email)->send(new InvoiceMail($dataAtributPelanggan, $pdf->output()));
 
             // Delay 5 detik sebelum lanjut ke email berikutnya
             sleep(5);
-        }
-
         return view('autorefresh_email');
     }
 }
