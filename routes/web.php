@@ -46,13 +46,9 @@ Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 
 use App\Http\Controllers\PengirimanEmailPendapatanController;
 Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailPendapatanController::class, 'proses_kirim_email_pembayaran']);
 
-// contoh sampel sederhana untuk mengetes midtrans
-Route::get('/cekmidtrans', [App\Http\Controllers\CobaMidtransController::class, 'cekmidtrans']);
 
 // contoh menggunakan callback
 use App\Http\Controllers\CobaMidtransController;
-// Route untuk menampilkan halaman tombol bayar & simulasi
-Route::get('/cek-midtrans', [CobaMidtransController::class, 'cekmidtranscallback']);
 
 // proses pengiriman email
 use App\Http\Controllers\PengirimanEmailPembelianController;
