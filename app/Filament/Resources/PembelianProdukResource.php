@@ -216,6 +216,10 @@ class PembelianProdukResource extends Resource
 
                     ->color('warning')
 
+                    ->requiresConfirmation() 
+        ->modalHeading('Konfirmasi Kirim Email')
+        ->modalDescription('Apakah Anda yakin ingin mengirim email faktur ini?')
+
                     ->action(function ($record) {
 
                         Mail::to('test@gmail.com')

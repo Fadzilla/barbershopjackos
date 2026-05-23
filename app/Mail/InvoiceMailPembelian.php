@@ -12,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 // tambahan agar bisa mengirim attachment
 use Illuminate\Mail\Mailables\Attachment;
 
-class InvoiceMail extends Mailable
+class InvoiceMailPembelian extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -41,7 +41,7 @@ class InvoiceMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Invoice Pembayaran Produk Barbershop Jackos',
+            subject: 'Invoice Pembelian barbershopjackos',
         );
     }
 

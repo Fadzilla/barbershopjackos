@@ -38,18 +38,19 @@
 </head>
 <body>
     <div class="invoice-box">
-        <div class="title">INVOICE PEMBAYARAN PRODUK - BARBERSHOP JACKOS</div>
+        <div class="title">INVOICE PENDAPATAN JASA - BARBERSHOP JACKOS</div>
 
         <div class="info">
             <strong>No Faktur:</strong> {{ $no_faktur }}<br>
-            <strong>Nama Pelanggan:</strong> {{ $nama_pelanggan }}<br>
+            <strong>Pelanggan:</strong> {{ $nama_pelanggan }}<br>
+            <strong>Barber (Pegawai):</strong> {{ $nama_pegawai }}<br>
             <strong>Tanggal:</strong> {{ $tanggal }}
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th>Produk</th>
+                    <th>Layanan Jasa</th>
                     <th>Qty</th>
                     <th>Harga</th>
                     <th>Subtotal</th>
@@ -58,10 +59,11 @@
             <tbody>
                 @foreach($items as $item)
                 <tr>
-                    <td>{{ $item->nama_produk }}</td>
-                    <td>{{ $item->total_produk }}</td>
-                    <td class="text-right">{{ rupiah($item->harga_jual, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ rupiah($item->harga_jual * $item->total_produk, 0, ',', '.') }}</td>
+                    {{-- Sesuaikan nama atribut dengan field di tabel detail_pendapatan kamu --}}
+                    <td>{{ $item->deskripsi }}</td>
+                    <td>{{ $item->jml }}</td>
+                    <td class="text-right">{{ rupiah($item->harga_paket, 0, ',', '.') }}</td>
+                    <td class="text-right">{{ rupiah($item->harga_paket * $item->jml, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
                 <tr>
@@ -71,7 +73,7 @@
             </tbody>
         </table>
 
-        <p style="margin-top: 30px;">Terima kasih atas kepercayaan Anda di Barbershp Jackos</p>
+        <p style="margin-top: 30px;">Terima kasih atas kepercayaan Anda di Barbershop Jackos!</p>
     </div>
 </body>
 </html>

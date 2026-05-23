@@ -72,15 +72,9 @@ Route::post('/prosesubahpassword', [App\Http\Controllers\AuthController::class, 
 ;
 // prosesubahpassword
 
-<<<<<<< HEAD
 // proses pengiriman email
 use App\Http\Controllers\PengirimanEmailPendapatanController;
-Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailPendapatanController::class, 'proses_kirim_email_pembayaran']);
-=======
-
-use App\Http\Controllers\PengirimanEmailPenjualanController;
-Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailController::class, 'proses_kirim_email_pembayaran']);
->>>>>>> 1bb20999041038e07537bf561e10bebe9dbdd15c
+Route::get('/proses_kirim_email_pembayaran_jasa', [PengirimanEmailPendapatanController::class, 'proses_kirim_email_pembayaran_jasa']);
 
 // untuk tes apriori
 use App\Http\Controllers\AprioriTestController;
@@ -88,20 +82,20 @@ Route::get('/test-apriori', [AprioriTestController::class, 'test']);
 Route::get('/test-apriori-2', [AprioriTestController::class, 'tes2']);
 
 // contoh sampel sederhana untuk mengetes midtrans
-Route::get('/cekmidtrans', [App\Http\Controllers\CobaMidtransController::class, 'cekmidtrans']);
-
+Route::get('/midtrans', [App\Http\Controllers\MidtransController::class, 'midtrans']);
 // contoh menggunakan callback
-use App\Http\Controllers\CobaMidtransController;
+use App\Http\Controllers\MidtransController;
 // Route untuk menampilkan halaman tombol bayar & simulasi
-Route::get('/cek-midtrans', [CobaMidtransController::class, 'cekmidtranscallback']);
+Route::get('/cek-midtrans', [MidtransController::class, 'midtranscallback']);
+Route::get('/midtrans', [MidtransController::class, 'midtranscallback']);
 
-// penjualan dan pembayaran customer
-Route::post('/tambah', [App\Http\Controllers\KeranjangController::class, 'tambahKeranjang'])->middleware('customer');
-Route::get('/lihatkeranjang', [App\Http\Controllers\KeranjangController::class, 'lihatkeranjang'])->middleware('customer');
-Route::delete('/hapus/{barang_id}', [App\Http\Controllers\KeranjangController::class, 'hapus'])->middleware('customer');
-Route::get('/lihatriwayat', [App\Http\Controllers\KeranjangController::class, 'lihatriwayat'])->middleware('customer');
-// untuk autorefresh pembayaran
-Route::get('/cek_status_pembayaran_pg', [App\Http\Controllers\KeranjangController::class, 'cek_status_pembayaran_pg']);
+Route::get('/midtrans/pembayaran/{token}', function ($token) {
+    return view('midtrans.pembayaran', ['snapToken' => $token]);
+})->name('midtrans.pembayaran');
+
+// Route untuk menerima laporan dari Midtrans (Callback) sesuai 8.7
+Route::post('/midtrans/callback', [MidtransController::class, 'handleCallback']);
+
 // proses pengiriman email
 use App\Http\Controllers\PengirimanEmailController;
 Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailController::class, 'proses_kirim_email_pembayaran']);
