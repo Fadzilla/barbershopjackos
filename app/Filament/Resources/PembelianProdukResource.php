@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PembelianProdukResource\Pages;
 use App\Models\PembelianProduk;
+use App\Models\Produk;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -86,10 +87,15 @@ class PembelianProdukResource extends Resource
 
                             Select::make('produk_id')
                                 ->relationship('produk', 'nama_produk')
-                                ->label('Nama Produk')
-                                ->searchable()
-                                ->required(),
-
+                                ->live(onBlur: true) // Opsi A: Hanya update kalau kamu klik di luar kotak (pindah fokus)
+                                // ATAU
+                                ->live(debounce: 500) // Opsi B: Tunggu 0.5 detik setelah berhenti mengetik/memilih baru update
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    $produk = Produk::find($state);
+                                    if ($produk) {
+                                    $set('harga_per_unit', $produk->harga_produk);
+                                    }
+                                }),
                             TextInput::make('qty')
                                 ->label('Quantity')
                                 ->numeric()

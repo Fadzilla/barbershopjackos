@@ -64,7 +64,7 @@ class ReturResource extends Resource
                                 ->readonly()
                                 ->required(),
 
-                            Select::make('karyawan_id')
+                            Select::make('pegawai_id')
                                 ->label('Pegawai')
                                 ->relationship(
                                     'pegawai',

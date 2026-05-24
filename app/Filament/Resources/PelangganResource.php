@@ -21,6 +21,17 @@ use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\DatePicker; 
 
+// tambahan untuk pelanggan exporter
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Filament\Exports\PelangganExporter;
+
+// tambahan untuk tombol unduh pdf
+use Filament\Tables\Actions\Action;
+use Barryvdh\DomPDF\Facade\Pdf; // Kalau kamu pakai DomPDF
+use Illuminate\Support\Facades\Storage;
+
+
 class PelangganResource extends Resource
 {
     protected static ?string $model = Pelanggan::class;
@@ -40,6 +51,20 @@ class PelangganResource extends Resource
                     ->label('Kode pelanggan')
                     ->required()
                     ->readonly() // Membuat field menjadi read-only
+                ,
+
+                Forms\Components\Select::make('user_id')
+                    ->label('Pilih Akun User')
+                    ->options(function () {
+                        // Mengambil data user yang grupnya 'pengguna'
+                        // pluck('name', 'id') -> tampilkan 'name' di dropdown, simpan 'id' ke DB
+                        return \App\Models\User::where('user_group', 'pengguna')
+                            ->pluck('name', 'id');
+                })
+                ->searchable() // Supaya bisa diketik/dicari namanya
+                ->preload()    // Supaya data langsung muncul saat diklik
+                ->required()
+                ->placeholder('--- Pilih User ---')
                 ,
                 TextInput::make('nama_pelanggan')
                     ->required()
@@ -107,6 +132,28 @@ class PelangganResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
+
+            // tombol tambahan
+            ->headerActions([
+                // tombol tambahan export csv dan excel
+                ExportAction::make()->exporter(PelangganExporter::class)->color('success'),
+                // tombol tambahan export pdf
+                // ✅ Tombol Unduh PDF
+                Action::make('downloadPdf')
+                ->label('Unduh PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->action(function () {
+                    $pelanggan = Pelanggan::all();
+
+                    $pdf = Pdf::loadView('pdf.pelanggan', ['pelanggan' => $pelanggan]);
+
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        'user-list.pdf'
+                    );
+                })
+            ])   
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

@@ -10,7 +10,7 @@ class PengirimanEmailRetur extends Model
 {
     use HasFactory;
 
-    protected $table = 'pengiriman_emails';
+    protected $table = 'pengiriman_emails_retur';
 
     protected $guarded = [];
 

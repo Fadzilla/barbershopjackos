@@ -234,7 +234,7 @@ class PenjualanResource extends Resource
                 $items = $get('items') ?? [];
 
                 $total = collect($items)->sum(function ($item) {
-                    return ($item['harga_jual'] ?? 0) * ($item['jml'] ?? 0);
+                    return ($item['harga_produk'] ?? 0) * ($item['jml'] ?? 0);
                 });
 
                 return view('filament.components.penjualan-table', [

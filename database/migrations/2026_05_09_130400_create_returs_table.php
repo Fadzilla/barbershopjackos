@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('kode_retur')->unique();
 
             // relasi pegawai
-            $table->foreignId('karyawan_id')
-                ->constrained('pegawais')
+            $table->foreignId('pegawai_id')
+                ->constrained('pegawai')
                 ->cascadeOnDelete();
 
             // relasi produk
