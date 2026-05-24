@@ -86,7 +86,7 @@ class PengirimanEmailPembelianController extends Controller
                 'invoice_number' => $no_faktur
             ];
 
-            // Kirim email
+            // Kirim email menggunakan Mailable
             Mail::to($email)->send(
                 new InvoiceMailPembelian(
                     $dataAtributPelanggan,
@@ -100,12 +100,11 @@ class PengirimanEmailPembelianController extends Controller
                 'status' => 'sudah terkirim',
                 'tgl_pengiriman_pesan' => now(),
             ]);
-        }
-            // Kirim email menggunakan Mailable
-             Mail::to($email)->send(new InvoiceMailPembelian($dataAtributPelanggan,$pdf->output()));
 
-             // Delay 5 detik sebelum lanjut ke email berikutnya
-             sleep(5);
+            // Delay 5 detik sebelum lanjut ke email berikutnya
+            sleep(5);
+        }
+
         return view('autorefresh_email');
     }
 }

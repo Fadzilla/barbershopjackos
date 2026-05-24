@@ -12,14 +12,14 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-// Form Components
+// form components
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 
-// Table Columns
+// table components
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\BadgeColumn;
@@ -49,27 +49,47 @@ class ProdukResource extends Resource
                     ])
                     ->required(),
 
-                // ✅ TAMBAHAN STOK (TIDAK MERUBAH YANG LAIN)
+                // stok
                 TextInput::make('stok')
                     ->label('Stok Produk')
                     ->numeric()
                     ->required()
-                    ->minValue(0),
+                    ->minValue(0)
+                    ->live()
+                    ->afterStateUpdated(function ($state, $set) {
 
+                        if ($state <= 0) {
+
+                            $set('status', 'Habis');
+
+                        } else {
+
+                            $set('status', 'Tersedia');
+
+                        }
+
+                    }),
+
+                // harga
                 TextInput::make('harga_produk')
                     ->label('Harga Produk')
                     ->numeric()
                     ->prefix('Rp')
                     ->required(),
 
+                // tanggal masuk
                 DatePicker::make('tanggal_masuk')
                     ->required(),
 
+                // foto
                 FileUpload::make('foto_produk')
+                    ->label('Foto Produk')
                     ->image()
                     ->directory('produk-images'),
 
+                // deskripsi
                 RichEditor::make('deskripsi_produk')
+                    ->label('Deskripsi Lengkap')
                     ->columnSpanFull(),
 
             ]);
@@ -93,12 +113,29 @@ class ProdukResource extends Resource
                 TextColumn::make('stok'),
 
                 ImageColumn::make('foto_produk')
-                    ->size(50),
+                    ->label('Foto')
+                    ->size(60),
+
+                TextColumn::make('stok')
+                    ->label('Stok')
+                    ->badge()
+                    ->sortable()
+                    ->color(fn ($state) =>
+                        $state <= 5 ? 'danger' : 'success'
+                    ),
+
+                TextColumn::make('harga_produk')
+                    ->label('Harga')
+                    ->money('IDR'),
 
                 TextColumn::make('tanggal_masuk')
-                    ->date(),
+                    ->label('Tanggal Masuk')
+                    ->date()
+                    ->sortable(),
 
                 TextColumn::make('deskripsi_produk')
+                    ->label('Deskripsi')
+                    ->html() // Agar format teks dari RichEditor muncul rapi
                     ->limit(50),
 
                 // ✅ TAMBAHAN STOK (TIDAK MERUBAH YANG LAIN)
@@ -107,28 +144,36 @@ class ProdukResource extends Resource
                     ->sortable()
                     ->badge()
                     ->color(fn ($state) => $state <= 5 ? 'danger' : 'success'),
-
-                TextColumn::make('harga_produk')
-                    ->label('Harga Produk')
-                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
             ])
+
             ->filters([
                 //
             ])
+
             ->actions([
+
+                Tables\Actions\ViewAction::make(),
+
                 Tables\Actions\EditAction::make(),
+
                 Tables\Actions\DeleteAction::make(),
+
             ])
+
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+
+                Tables\Actions\BulkActionGroup::make([
+
+                    Tables\Actions\DeleteBulkAction::make(),
+
+                ]),
+
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

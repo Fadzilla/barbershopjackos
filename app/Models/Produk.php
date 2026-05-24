@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// relasi
+use App\Models\Retur;
+
 class Produk extends Model
 {
     use HasFactory;
@@ -16,6 +19,6 @@ class Produk extends Model
     // Relasi ke detail pembelian produk
     public function detailPembelianProduk()
     {
-        return $this->hasMany(DetailPembelianProduk::class);
+       return $this->hasMany(DetailPembelianProduk::class);
     }
 }

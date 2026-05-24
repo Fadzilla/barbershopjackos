@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class PenggunaMiddleware
+class CustomerMiddleware
 {
     /**
      * Handle an incoming request.
@@ -16,7 +16,7 @@ class PenggunaMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // return $next($request);
-        // Cek apakah user sudah login dan memiliki user_group = 'pengguna'
+        // Cek apakah user sudah login dan memiliki user_group = 'customer'
         if (auth()->check() && auth()->user()->user_group === 'pengguna') {
             return $next($request); // Lanjut ke request berikutnya
         }

@@ -19,6 +19,17 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 
+// tambahan untuk user exporter
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Filament\Exports\PegawaiExporter;
+
+// tambahan untuk tombol unduh pdf
+use Filament\Tables\Actions\Action; //untuk dapat menggunakan action
+use Barryvdh\DomPDF\Facade\Pdf; // Kalau kamu pakai DomPDF
+use Illuminate\Support\Facades\Storage;
+
+
 class PegawaiResource extends Resource
 {
     protected static ?string $model = Pegawai::class;
@@ -90,6 +101,30 @@ class PegawaiResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
+
+            
+            // tombol tambahan
+            ->headerActions([
+                // tombol tambahan export csv dan excel
+                ExportAction::make()->exporter(PegawaiExporter::class)->color('success'),
+                // tombol tambahan export pdf
+                // ✅ Tombol Unduh PDF
+                Action::make('downloadPdf')
+                ->label('Unduh PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->action(function () {
+                    $pegawai = Pegawai::all();
+
+                    $pdf = Pdf::loadView('pdf.pegawai', ['pegawai' => $pegawai]);
+
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        'pegawai-list.pdf'
+                    );
+                })
+            ])   
+
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);

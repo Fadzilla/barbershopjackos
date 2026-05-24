@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PengirimanEmailPembelian extends Model
+class PengirimanEmailPemakaian extends Model
 {
     use HasFactory;
 
@@ -13,9 +13,11 @@ class PengirimanEmailPembelian extends Model
 
     protected $guarded = []; //semua kolom boleh di isi
 
-    // relasi ke tabel pembelian_produk
-    public function pembelian_produk()
+    // relasi ke tabel pemakaian
+    public function pemakaian()
     {
-        return $this->belongsTo(pembelian_produk::class, 'pembelian_produk_id');
+        return $this->belongsTo(Pemakaian::class, 'pemakaian_id');
     }
 }
+   
+

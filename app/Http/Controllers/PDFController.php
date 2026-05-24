@@ -2,17 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Paket;
+use Illuminate\Http\Request;
+
+// menggunakan kelas pdf
 use Barryvdh\DomPDF\Facade\Pdf;
+
+// model
+use App\Models\Pemakaian;
 
 class PDFController extends Controller
 {
-    public function paketPdf()
+    // cetak pdf pemakaian
+    public function pemakaianpdf()
     {
-        $pakets = Paket::all();
+        // ambil semua data pemakaian
+        $pemakaian = Pemakaian::with('pegawai')->get();
 
-        $pdf = Pdf::loadView('pdf.paket-pdf', compact('pakets'));
+        // load view pdf
+        $pdf = Pdf::loadView('pdf.pemakaian-pdf', [
+            'pemakaian' => $pemakaian
+        ]);
 
-        return $pdf->download('data-paket.pdf');
+        // download pdf
+        return $pdf->download('data-pemakaian.pdf');
     }
 }
