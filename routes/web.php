@@ -52,15 +52,31 @@ Route::get('/pengiriman_email_pemakaian', [PengirimanEmailPemakaianController::c
 
 // proses pengiriman email
 use App\Http\Controllers\PengirimanEmailPendapatanController;
-Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailPendapatanController::class, 'proses_kirim_email_pembayaran']);
+Route::get('/proses_kirim_email_pembayaran_jasa', [PengirimanEmailPendapatanController::class, 'proses_kirim_email_pembayaran_jasa']);
 
+// untuk tes apriori
+use App\Http\Controllers\AprioriTestController;
+Route::get('/test-apriori', [AprioriTestController::class, 'test']);
+Route::get('/test-apriori-2', [AprioriTestController::class, 'tes2']);
 
+// contoh sampel sederhana untuk mengetes midtrans
+Route::get('/midtrans', [App\Http\Controllers\MidtransController::class, 'midtrans']);
 // contoh menggunakan callback
-use App\Http\Controllers\CobaMidtransController;
+use App\Http\Controllers\MidtransController;
+// Route untuk menampilkan halaman tombol bayar & simulasi
+Route::get('/cek-midtrans', [MidtransController::class, 'midtranscallback']);
+Route::get('/midtrans', [MidtransController::class, 'midtranscallback']);
+
+Route::get('/midtrans/pembayaran/{token}', function ($token) {
+    return view('midtrans.pembayaran', ['snapToken' => $token]);
+})->name('midtrans.pembayaran');
+
+// Route untuk menerima laporan dari Midtrans (Callback) sesuai 8.7
+Route::post('/midtrans/callback', [MidtransController::class, 'handleCallback']);
 
 // proses pengiriman email
 use App\Http\Controllers\PengirimanEmailPembelianController;
 Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailPembelianController::class, 'proses_kirim_email_pembayaran']);
-use App\Http\Controllers\PDFController;
+
 
 Route::get('/paket-pdf', [PDFController::class, 'paketPdf']);

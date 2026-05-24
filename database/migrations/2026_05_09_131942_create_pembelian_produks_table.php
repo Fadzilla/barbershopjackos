@@ -22,9 +22,10 @@ return new class extends Migration
 
             // relasi ke produk
             $table->foreignId('produk_id')
-                ->constrained('produks')
+                ->constrained('produk')
                 ->cascadeOnDelete();
-
+// harga per unit
+            $table->string('no_faktur');
             // tanggal pembelian
             $table->date('tanggal');
 

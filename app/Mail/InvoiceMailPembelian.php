@@ -9,7 +9,6 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-
 // tambahan agar bisa mengirim attachment
 use Illuminate\Mail\Mailables\Attachment;
 
@@ -20,27 +19,29 @@ class InvoiceMailPembelian extends Mailable
     // tambahan untuk data dan konten pdf
     public $data;
     public $pdfContent;
+
     /**
      * Create a new message instance.
      */
-    //public function __construct()
-    //{
-        //
-
-    //}
+    // public function __construct()
+    // {
+    //     //
+    // }
 
     public function __construct($data, $pdfContent)
     {
         $this->data = $data;
         $this->pdfContent = $pdfContent;
     }
+
+
     /**
      * Get the message envelope.
      */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Invoice Pendapatan Jasa Barbershop Jackos',
+            subject: 'Invoice Pembelian barbershopjackos',
         );
     }
 
@@ -64,7 +65,7 @@ class InvoiceMailPembelian extends Mailable
      */
     public function attachments(): array
     {
-       // ganti isi return dengan kode program untuk membuat invoice 
+        // ganti isi return dengan kode program untuk membuat invoice 
         return [
             // tambahkan pemrosesan attachment
             Attachment::fromData(fn () => $this->pdfContent, 'invoice.pdf')

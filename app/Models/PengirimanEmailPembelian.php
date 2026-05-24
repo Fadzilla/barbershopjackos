@@ -19,5 +19,3 @@ class PengirimanEmailPembelian extends Model
         return $this->belongsTo(pembelian_produk::class, 'pembelian_produk_id');
     }
 }
-
-   
