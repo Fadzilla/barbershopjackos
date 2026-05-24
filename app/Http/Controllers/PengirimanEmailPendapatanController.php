@@ -11,7 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class PengirimanEmailPendapatanController extends Controller
 {
-    public static function proses_kirim_email_pembayaran_jasa(){
+    public static function proses_kirim_email_pendapatan(){
         
         // 1. Ambil data transaksi utama termasuk email user dan nama pegawai
         $data = DB::table('pendapatan')

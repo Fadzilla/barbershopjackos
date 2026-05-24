@@ -41,7 +41,7 @@ class InvoiceMailPendapatan extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Invoice Pembelian barbershopjackos',
+            subject: 'Invoice Pendapatan barbershopjackos',
         );
     }
 
