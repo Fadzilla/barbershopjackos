@@ -2,19 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PenjualanProduk extends Model
 {
-    use HasFactory;
+    protected $table = 'penjualan_produk';    
+    protected $fillable = ['penjualan_id', 'produk_id', 'harga_produk', 'harga_jual', 'jml', 'tgl'];
 
-    protected $table = 'penjualan_produk';
-    protected $fillable = ['penjualan_id', 'produk_id', 'harga_jual', 'jml', 'tgl'];
-
-    public function penjualan()
+    protected static function booted()
     {
-        return $this->belongsTo(Penjualan::class, 'penjualan_id');
+        // Setiap kali ada item produk terjual (Insert ke tabel penjualan_produk)
+        static::created(function ($item) {
+            $produk = $item->produk;
+            if ($produk) {
+                // Kurangi stok produk berdasarkan jumlah (jml) yang dibeli
+                $produk->decrement('stok', $item->jml);
+            }
+        });
     }
 
     public function produk()

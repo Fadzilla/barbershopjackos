@@ -14,7 +14,7 @@ class PengirimanEmailReturController extends Controller
     public static function proses_kirim_email_retur($id)
     {
         $data = DB::table('returs')
-            ->join('pegawai', 'returs.karyawan_id', '=', 'pegawai.id')
+            ->join('pegawai', 'returs.pegawai_id', '=', 'pegawai.id')
             ->join('produk', 'returs.produk_id', '=', 'produk.id')
             ->where('returs.id', $id)
             ->select(

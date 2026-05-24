@@ -16,7 +16,7 @@ class Retur extends Model
 
     protected $fillable = [
         'kode_retur',
-        'karyawan_id',
+        'pegawai_id',
         'produk_id',
         'status',
         'alasan',
@@ -65,7 +65,7 @@ class Retur extends Model
 
     public function pegawai()
     {
-        return $this->belongsTo(Pegawai::class, 'karyawan_id');
+        return $this->belongsTo(Pegawai::class, 'pegawai_id');
     }
 
     public function produk()
