@@ -38,31 +38,19 @@
 </head>
 <body>
     <div class="invoice-box">
-<<<<<<<< HEAD:resources/views/pdf/invoicePendapatan.blade.php
         <div class="title">INVOICE PENDAPATAN JASA - BARBERSHOP JACKOS</div>
 
         <div class="info">
             <strong>No Faktur:</strong> {{ $no_faktur }}<br>
             <strong>Pelanggan:</strong> {{ $nama_pelanggan }}<br>
             <strong>Barber (Pegawai):</strong> {{ $nama_pegawai }}<br>
-========
-        <div class="title">INVOICE PEMBAYARAN</div>
-
-        <div class="info">
-            <strong>No Faktur:</strong> {{ $no_faktur }}<br>
-            <strong>Nama Pembeli:</strong> {{ $nama_pembeli }}<br>
->>>>>>>> 1178da5f8ca49b054798ef8caad8f48e566f4418:resources/views/pdf/invoiceRetur.blade.php
             <strong>Tanggal:</strong> {{ $tanggal }}
         </div>
 
         <table>
             <thead>
                 <tr>
-<<<<<<<< HEAD:resources/views/pdf/invoicePendapatan.blade.php
                     <th>Layanan Jasa</th>
-========
-                    <th>Barang</th>
->>>>>>>> 1178da5f8ca49b054798ef8caad8f48e566f4418:resources/views/pdf/invoiceRetur.blade.php
                     <th>Qty</th>
                     <th>Harga</th>
                     <th>Subtotal</th>
@@ -71,18 +59,11 @@
             <tbody>
                 @foreach($items as $item)
                 <tr>
-<<<<<<<< HEAD:resources/views/pdf/invoicePendapatan.blade.php
                     {{-- Sesuaikan nama atribut dengan field di tabel detail_pendapatan kamu --}}
                     <td>{{ $item->deskripsi }}</td>
                     <td>{{ $item->jml }}</td>
                     <td class="text-right">{{ rupiah($item->harga_paket, 0, ',', '.') }}</td>
                     <td class="text-right">{{ rupiah($item->harga_paket * $item->jml, 0, ',', '.') }}</td>
-========
-                    <td>{{ $item->nama_barang }}</td>
-                    <td>{{ $item->total_barang }}</td>
-                    <td class="text-right">{{ rupiah($item->harga_jual, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ rupiah($item->harga_jual * $item->total_barang, 0, ',', '.') }}</td>
->>>>>>>> 1178da5f8ca49b054798ef8caad8f48e566f4418:resources/views/pdf/invoiceRetur.blade.php
                 </tr>
                 @endforeach
                 <tr>
@@ -92,11 +73,7 @@
             </tbody>
         </table>
 
-<<<<<<<< HEAD:resources/views/pdf/invoicePendapatan.blade.php
         <p style="margin-top: 30px;">Terima kasih atas kepercayaan Anda di Barbershop Jackos!</p>
-========
-        <p style="margin-top: 30px;">Terima kasih atas kepercayaan Anda!</p>
->>>>>>>> 1178da5f8ca49b054798ef8caad8f48e566f4418:resources/views/pdf/invoiceRetur.blade.php
     </div>
 </body>
 </html>

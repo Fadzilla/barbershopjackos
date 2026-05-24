@@ -11,7 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class PengirimanEmailPembelianController extends Controller
 {
-    public static function proses_kirim_email_pembayaran()
+    public static function proses_kirim_email_pembelian()
     {
 
         // Ambil data pembelian yang sudah bayar

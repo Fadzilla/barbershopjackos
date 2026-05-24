@@ -21,7 +21,7 @@ Route::get('/', function () {
 
 // proses pengiriman email
 use App\Http\Controllers\PengirimanEmailReturController;
-Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailReturController::class, 'proses_kirim_email_pembayaran']);
+Route::get('/proses_kirim_email_retur', [PengirimanEmailReturController::class, 'proses_kirim_email_retur']);
 
 // contoh route yang mengarah ke konten statis
 Route::get('/selamat', function () {
@@ -47,12 +47,12 @@ Route::get('/pemakaianpdf', [PDFController::class, 'pemakaianpdf']);
 
 //proses pengiriman email
 use App\Http\Controllers\PengirimanEmailPemakaianController;
-Route::get('/pengiriman_email_pemakaian', [PengirimanEmailPemakaianController::class, 'proses_kirim_email_pemakaian']);
+Route::get('/proses_kirim_email_pemakaian', [PengirimanEmailPemakaianController::class, 'proses_kirim_email_pemakaian']);
 // prosesubahpassword
 
 // proses pengiriman email
 use App\Http\Controllers\PengirimanEmailPendapatanController;
-Route::get('/proses_kirim_email_pembayaran_jasa', [PengirimanEmailPendapatanController::class, 'proses_kirim_email_pembayaran_jasa']);
+Route::get('/proses_kirim_email_pendapatan', [PengirimanEmailPendapatanController::class, 'proses_kirim_email_pendapatan']);
 
 // untuk tes apriori
 use App\Http\Controllers\AprioriTestController;
@@ -76,7 +76,7 @@ Route::post('/midtrans/callback', [MidtransController::class, 'handleCallback'])
 
 // proses pengiriman email
 use App\Http\Controllers\PengirimanEmailPembelianController;
-Route::get('/proses_kirim_email_pembayaran', [PengirimanEmailPembelianController::class, 'proses_kirim_email_pembayaran']);
+Route::get('/proses_kirim_email_pembelian', [PengirimanEmailPembelianController::class, 'proses_kirim_email_pembelian']);
 
 
 Route::get('/paket-pdf', [PDFController::class, 'paketPdf']);
