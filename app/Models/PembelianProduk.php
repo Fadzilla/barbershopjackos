@@ -11,18 +11,26 @@ class PembelianProduk extends Model
 
     protected $table = 'pembelian_produks';
 
-    protected $guarded = [];
-
-   // relasi untuk pegawai
-
+    protected $fillable = ['pegawai_id', 'no_faktur', 'tanggal', 'total'];
+    // relasi untuk pegawai
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
     }
 
-    // relasi ke produk
-    public function produk()
+    public function detailPembelian()
     {
-        return $this->belongsTo(Produk::class, 'produk_id');
+        // 'pembelian_produks_id' adalah nama kolom di tabel detail_pembelian
+        return $this->hasMany(DetailPembelian::class, 'pembelian_produks_id');
     }
+
+    // Tambahkan ini di dalam class PembelianProduk
+    public function getTotalAttribute()
+    {
+        // Hitung total dari relasi detailPembelian
+        return $this->detailPembelian->sum(function ($detail) {
+            return $detail->qty * $detail->harga_per_unit;
+        });
+    }
+
 }

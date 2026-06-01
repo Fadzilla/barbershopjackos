@@ -20,21 +20,12 @@ return new class extends Migration
                 ->constrained('pegawai')
                 ->cascadeOnDelete();
 
-            // relasi ke produk
-            $table->foreignId('produk_id')
-                ->constrained('produk')
-                ->cascadeOnDelete();
-// harga per unit
             $table->string('no_faktur');
             // tanggal pembelian
             $table->date('tanggal');
 
-            // harga per unit
-            $table->decimal('harga_per_unit', 15, 2);
-
             // total harga
-            $table->decimal('total', 15, 2);
-
+            $table->decimal('total', 15, 2)->nullable();
             $table->timestamps();
         });
     }

@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
 
 // Wizard
 use Filament\Forms\Components\Wizard;
@@ -57,93 +58,102 @@ class PembelianProdukResource extends Resource
     {
         return $form
             ->schema([
-
                 Wizard::make([
-
-                    // 1 untuk data pegawai
-
                     Step::make('Data Pegawai')
                         ->schema([
-
-                            Select::make('pegawai_id')
-                                ->relationship('pegawai', 'nama_pegawai')
-                                ->label('Nama Pegawai')
-                                ->searchable()
-                                ->required(),
-
-                            DatePicker::make('tanggal')
-                                ->required(),
-
-                        ]),
-
-                    // 2 untruk data produk
-
-                    Step::make('Data Produk')
-                        ->schema([
-
                             TextInput::make('no_faktur')
                                 ->label('No Faktur')
+                                ->required()
+                                ->default(function () {
+                                    $lastRecord = \App\Models\PembelianProduk::latest('id')->first();
+                                    $nextId = $lastRecord ? $lastRecord->id + 1 : 1;
+                                    return 'INV' . str_pad($nextId, 3, '0', STR_PAD_LEFT);
+                                })
+                                ->readOnly(),
+                            Select::make('pegawai_id')
+                                ->relationship('pegawai', 'nama_pegawai')
                                 ->required(),
-
-                            Select::make('produk_id')
-                                ->relationship('produk', 'nama_produk')
-                                ->live(onBlur: true) // Opsi A: Hanya update kalau kamu klik di luar kotak (pindah fokus)
-                                // ATAU
-                                ->live(debounce: 500) // Opsi B: Tunggu 0.5 detik setelah berhenti mengetik/memilih baru update
-                                ->afterStateUpdated(function ($state, callable $set) {
-                                    $produk = Produk::find($state);
-                                    if ($produk) {
-                                    $set('harga_per_unit', $produk->harga_produk);
-                                    }
-                                }),
-                            TextInput::make('qty')
-                                ->label('Quantity')
-                                ->numeric()
-                                ->live()
-                                ->required()
-                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
-
-                                    $harga = (int) $get('harga_per_unit');
-
-                                    $qty = (int) $state;
-
-                                    $set('total', $qty * $harga);
-                                }),
-
-                            TextInput::make('harga_per_unit')
-                                ->label('Harga Satuan')
-                                ->numeric()
-                                ->live()
-                                ->required()
-                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
-
-                                    $qty = (int) $get('qty');
-
-                                    $harga = (int) $state;
-
-                                    $set('total', $qty * $harga);
-                                }),
-
+                            DatePicker::make('tanggal')
+                                ->default(now())
+                                ->required(),
                         ]),
 
-                    // total pembelian
+                    Step::make('Daftar Produk')
+                        ->schema([
+                            Repeater::make('detailPembelian')
+                                ->relationship('detailPembelian')
+                                ->live()
+                                // Logika hitung total saat baris ditambah/dihapus
+                                ->afterStateUpdated(function ($get, $set) {
+                                    $items = $get('detailPembelian') ?? [];
+                                    $total = 0;
+                                    foreach ($items as $item) {
+                                        $total += (int) ($item['qty'] ?? 0) * (int) ($item['harga_per_unit'] ?? 0);
+                                    }
+                                    // Gunakan ../../ untuk keluar dari scope repeater menuju field total di Wizard
+                                    $set('../../total', $total);
+                                })
+                                ->schema([
+                                    Select::make('produk_id')
+                                        ->relationship('produk', 'nama_produk')
+                                        ->required()
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, $set, $get) {
+                                            // Isi harga otomatis saat produk dipilih
+                                            $harga = \App\Models\Produk::find($state)?->harga_produk ?? 0;
+                                            $set('harga_per_unit', $harga);
+
+                                            // Langsung hitung ulang total setelah pilih produk
+                                            $items = $get('../../detailPembelian') ?? [];
+                                            $total = 0;
+                                            foreach ($items as $item) {
+                                                $total += (int) ($item['qty'] ?? 0) * (int) ($item['harga_per_unit'] ?? 0);
+                                            }
+                                            $set('../../total', $total);
+                                        })
+                                        ->columnSpan(2),
+
+                                    TextInput::make('qty')
+                                        ->numeric()
+                                        ->default(1)
+                                        ->live()
+                                        ->afterStateUpdated(function ($get, $set) {
+                                            // Update total saat qty diketik
+                                            $items = $get('../../detailPembelian') ?? [];
+                                            $total = 0;
+                                            foreach ($items as $item) {
+                                                $total += (int) ($item['qty'] ?? 0) * (int) ($item['harga_per_unit'] ?? 0);
+                                            }
+                                            $set('../../total', $total);
+                                        }),
+
+                                    TextInput::make('harga_per_unit')
+                                        ->numeric()
+                                        ->live()
+                                        ->afterStateUpdated(function ($get, $set) {
+                                            // Update total saat harga diketik manual
+                                            $items = $get('../../detailPembelian') ?? [];
+                                            $total = 0;
+                                            foreach ($items as $item) {
+                                                $total += (int) ($item['qty'] ?? 0) * (int) ($item['harga_per_unit'] ?? 0);
+                                            }
+                                            $set('../../total', $total);
+                                        }),
+                                ])->columns(4),
+                        ]),
 
                     Step::make('Total Pembelian')
                         ->schema([
-
                             TextInput::make('total')
+                                ->label('Total Keseluruhan')
                                 ->numeric()
+                                ->prefix('Rp')
                                 ->readOnly()
-                                ->prefix('Rp'),
-
+                                ->required(),
                         ]),
-
-                ])
-                ->columnSpanFull()
-
+                ])->columnSpanFull(),
             ]);
     }
-
     // tabelnya
 
     public static function table(Table $table): Table
@@ -158,7 +168,7 @@ class PembelianProdukResource extends Resource
                     ->label('Unduh Excel')
                     ->exporter(PembelianProdukExporter::class),
 
-               // untuk export pdf
+                // untuk export pdf
 
                 Action::make('pdf')
 
@@ -177,7 +187,7 @@ class PembelianProdukResource extends Resource
                         ]);
 
                         return response()->streamDownload(
-                            fn () => print($pdf->output()),
+                            fn() => print ($pdf->output()),
                             'laporan-pembelian-produk.pdf'
                         );
                     }),
@@ -185,30 +195,16 @@ class PembelianProdukResource extends Resource
             ])
 
             ->columns([
-
-                TextColumn::make('pegawai.nama_pegawai')
-                    ->label('Nama Pegawai')
-                    ->searchable(),
-
-                TextColumn::make('produk.nama_produk')
-                    ->label('Nama Produk')
-                    ->searchable(),
-
-                TextColumn::make('tanggal')
-                    ->date(),
-
-                TextColumn::make('harga_per_unit')
+                Tables\Columns\TextColumn::make('no_faktur')->searchable(),
+                Tables\Columns\TextColumn::make('pegawai.nama_pegawai')->label('Pegawai'),
+                Tables\Columns\TextColumn::make('tanggal')->date(),
+                // Tambahkan kolom ini untuk menampilkan total di tabel
+                Tables\Columns\TextColumn::make('total')
+                    ->label('Total Bayar')
+                    ->state(function (PembelianProduk $record) {
+                        return $record->total; // Ini akan memanggil fungsi getTotalAttribute di model
+                    })
                     ->money('IDR'),
-
-                TextColumn::make('total')
-                    ->money('IDR'),
-
-                TextColumn::make('no_faktur')
-                    ->label('No Faktur'),
-
-                TextColumn::make('qty')
-                    ->label('Qty'),
-
             ])
 
             ->actions([
@@ -222,9 +218,9 @@ class PembelianProdukResource extends Resource
 
                     ->color('warning')
 
-                    ->requiresConfirmation() 
-        ->modalHeading('Konfirmasi Kirim Email')
-        ->modalDescription('Apakah Anda yakin ingin mengirim email faktur ini?')
+                    ->requiresConfirmation()
+                    ->modalHeading('Konfirmasi Kirim Email')
+                    ->modalDescription('Apakah Anda yakin ingin mengirim email faktur ini?')
 
                     ->action(function ($record) {
 
@@ -250,7 +246,7 @@ class PembelianProdukResource extends Resource
             ]);
     }
 
-   // untuk relasinya
+    // untuk relasinya
 
     public static function getRelations(): array
     {

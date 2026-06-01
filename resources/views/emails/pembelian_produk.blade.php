@@ -20,8 +20,27 @@
         </tr>
 
         <tr>
-            <th>Nama Produk</th>
-            <td>{{ $pembelian->produk->nama_produk }}</td>
+            <th>Detail Produk</th>
+            <td>
+                <table border="0" cellpadding="5" width="100%">
+                    <thead>
+                        <tr>
+                            <th align="left">Produk</th>
+                            <th align="center">Qty</th>
+                            <th align="right">Harga</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($pembelian->detailPembelian as $detail)
+                        <tr>
+                            <td>{{ $detail->produk->nama_produk ?? 'Produk Tidak Ditemukan' }}</td>
+                            <td align="center">{{ $detail->qty }}</td>
+                            <td align="right">Rp {{ number_format($detail->harga_per_unit, 0, ',', '.') }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </td>
         </tr>
 
         <tr>
@@ -30,18 +49,8 @@
         </tr>
 
         <tr>
-            <th>Qty</th>
-            <td>{{ $pembelian->qty }}</td>
-        </tr>
-
-        <tr>
-            <th>Harga Satuan</th>
-            <td>Rp {{ number_format($pembelian->harga_per_unit,0,',','.') }}</td>
-        </tr>
-
-        <tr>
             <th>Total</th>
-            <td>Rp {{ number_format($pembelian->total,0,',','.') }}</td>
+            <td>Rp {{ number_format($pembelian->total, 0, ',', '.') }}</td>
         </tr>
 
     </table>
