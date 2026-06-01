@@ -14,11 +14,11 @@ class PendapatanJasa extends Model
 
     public function pendapatan()
     {
-        return $this->belongsTo(Penjualan::class, 'pendapatan_id');
+        return $this->belongsTo(Pendapatan::class, 'pendapatan_id');
     }
 
     public function pakets()
     {
-        return $this->belongsTo(Barang::class, 'pakets_id');
+        return $this->belongsTo(Paket::class, 'pakets_id');
     }
 }

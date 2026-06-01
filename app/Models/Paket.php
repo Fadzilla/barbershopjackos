@@ -16,6 +16,6 @@ class Paket extends Model
 // Relasi dengan tabel relasi many to many nya
     public function pendapatanJasa()
     {
-        return $this->hasMany(PendapatanJasa::class, 'pakets_id');
+        return $this->hasMany(PendapatanJasa::class, 'pendapatan_id');
     }
 }
