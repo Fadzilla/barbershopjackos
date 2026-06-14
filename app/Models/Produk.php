@@ -16,13 +16,6 @@ class Produk extends Model
 
     protected $guarded = [];
 
-    protected $fillable = [
-    'nama_produk',
-    'harga_jual',
-    'stok', // <--- WAJIB ADA DI SINI
-    // ...
-];
-
     // Relasi ke detail pembelian produk
     public function detailPembelianProduk()
     {

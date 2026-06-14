@@ -33,7 +33,7 @@ class PengirimanEmailPemakaianController extends Controller
 
                 ->whereNotIn('pemakaian.id', function ($query) {
                     $query->select('pemakaian_id')
-                        ->from('pengiriman_email');
+                        ->from('pengiriman_email_pemakaian');
                 })
 
                 ->select(
@@ -70,10 +70,10 @@ class PengirimanEmailPemakaianController extends Controller
                         )
 
                         ->join(
-                            'produks',
+                            'produk',
                             'pemakaian_produk.produk_id',
                             '=',
-                            'produks.id'
+                            'produk.id'
                         )
 
                         ->join(
@@ -90,9 +90,9 @@ class PengirimanEmailPemakaianController extends Controller
 
                             'pegawai.nama_pegawai',
 
-                            'produks.id as produk_id',
+                            'produk.id as produk_id',
 
-                            'produks.nama_produk',
+                            'produk.nama_produk',
 
                             DB::raw('SUM(pemakaian_produk.jumlah) as total_produk'),
 
@@ -107,8 +107,8 @@ class PengirimanEmailPemakaianController extends Controller
                             'pemakaian.id',
                             'pemakaian.nomer_pemakaian',
                             'pegawai.nama_pegawai',
-                            'produks.id',
-                            'produks.nama_produk',
+                            'produk.id',
+                            'produk.nama_produk',
                             'pemakaian_produk.tanggal_pakai'
                         )
 
