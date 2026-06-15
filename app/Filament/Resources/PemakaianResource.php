@@ -114,15 +114,23 @@ class PemakaianResource extends Resource
                                     ->afterStateUpdated(function ($state, $set) {
                                         $produk = Produk::find($state);
                                         $set('stok', $produk ? $produk->stok : 0);
+                                        $set('harga', $produk ? $produk->harga_produk : 0);
                                     })
                                     ->afterStateHydrated(function ($state, $set) {
                                         $produk = Produk::find($state);
                                         $set('stok', $produk ? $produk->stok : 0);
+                                        $set('harga', $produk ? $produk->harga_produk : 0);
                                     }),
 
                                 TextInput::make('stok')
                                     ->readonly()
                                     ->dehydrated(false),
+
+                                TextInput::make('harga')
+                                    ->label('Harga/Unit')
+                                    ->readonly()
+                                    ->dehydrated(false)
+                                    ->prefix('Rp'),
 
                                 TextInput::make('jumlah')
                                     ->numeric()
@@ -131,10 +139,11 @@ class PemakaianResource extends Resource
                                     ->reactive()
                                     ->live()
                                     ->afterStateUpdated(function ($state, $set, $get) {
-                                        $totalPemakaian = collect($get('../../items'))
-                                            ->sum(fn($item) => (int) ($item['jumlah'] ?? 0));
+                                        $totalNilai = collect($get('../../items'))->sum(function ($item) {
+                                            return ($item['jumlah'] ?? 0) * ($item['harga'] ?? 0);
+                                        });
 
-                                        $set('../../total_pemakaian', $totalPemakaian);
+                                        $set('../../total_pemakaian', $totalNilai);
                                     }),
 
                                 DatePicker::make('tanggal_pakai')
@@ -184,14 +193,16 @@ class PemakaianResource extends Resource
                                         }
                                     }
 
-                                    $totalPemakaian = PemakaianProduk::where(
-                                        'pemakaian_id',
-                                        $pemakaian->id
-                                    )->sum('jumlah');
+                                    $totalNilai = 0;
+                                    $details = PemakaianProduk::where('pemakaian_id', $pemakaian->id)->get();
+                                    foreach ($details as $detail) {
+                                        $produk = Produk::find($detail->produk_id);
+                                        if ($produk) {
+                                            $totalNilai += $detail->jumlah * $produk->harga_produk;
+                                        }
+                                    }
 
-                                    $pemakaian->update([
-                                        'total_pemakaian' => $totalPemakaian
-                                    ]);
+                                    $pemakaian->update(['total_pemakaian' => $totalNilai]);
                                 })
                                 ->label('Proses')
                                 ->color('primary'),
@@ -233,6 +244,7 @@ class PemakaianResource extends Resource
 
                 TextColumn::make('total_pemakaian')
                     ->label('Total')
+                    ->money('IDR')
                     ->sortable()
                     ->alignment('end'),
 

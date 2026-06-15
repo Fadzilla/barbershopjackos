@@ -5,6 +5,8 @@ namespace App\Filament\Resources\PembelianProdukResource\Pages;
 use App\Filament\Resources\PembelianProdukResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Notifications\Notification;
+use App\Services\JurnalOtomatisService;
 
 class CreatePembelianProduk extends CreateRecord
 {
@@ -33,6 +35,28 @@ class CreatePembelianProduk extends CreateRecord
                     $produk->increment('stok', (int) $detail->qty);
                 }
             }
+        }
+
+        $this->buatJurnalOtomatis($pembelian);
+    }
+
+    protected function buatJurnalOtomatis($pembelian)
+    {
+        try {
+            $jurnalService = app(JurnalOtomatisService::class);
+            $jurnal = $jurnalService->dariPembelian($pembelian);
+
+            Notification::make()
+                ->success()
+                ->title('Jurnal otomatis dibuat')
+                ->body("Jurnal {$jurnal->no_jurnal} untuk pembelian faktur {$pembelian->no_faktur}")
+                ->send();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->danger()
+                ->title('Gagal membuat jurnal')
+                ->body($e->getMessage())
+                ->send();
         }
     }
 
