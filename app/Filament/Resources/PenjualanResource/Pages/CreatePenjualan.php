@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 // untuk notifikasi
 
 use Filament\Notifications\Notification;
+use App\Services\JurnalOtomatisService;
 
 
 
@@ -150,8 +151,8 @@ class CreatePenjualan extends CreateRecord
             // 3. Update status penjualan menjadi "bayar"
 
             $penjualan->update(['status' => 'bayar']);
-
-
+    
+            $this->buatJurnalOtomatis($penjualan);
 
             Notification::make()
 
@@ -165,5 +166,24 @@ class CreatePenjualan extends CreateRecord
 
     }
 
+     protected function buatJurnalOtomatis($penjualan)
+    {
+        try {
+            $jurnalService = app(JurnalOtomatisService::class);  // ← huruf S besar
+            $jurnal = $jurnalService->dariPenjualan($penjualan);
+
+            Notification::make()
+                ->success()
+                ->title('Jurnal otomatis dibuat')
+                ->body("Jurnal {$jurnal->no_jurnal} untuk faktur {$penjualan->no_faktur}")
+                ->send();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->danger()
+                ->title('Gagal membuat jurnal')
+                ->body($e->getMessage())
+                ->send();
+        }
+    }
 } 
 

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 // untuk notifikasi
 use Filament\Notifications\Notification;
+use App\Services\JurnalOtomatisService;
 
 class CreatePendapatan extends CreateRecord
 {
@@ -58,6 +59,8 @@ class CreatePendapatan extends CreateRecord
         // Update status pendapatan jadi "dibayar"
         $pendapatan->update(['status' => 'bayar']);
 
+        $this->buatJurnalOtomatis($pendapatan);
+
         // Notifikasi sukses
         Notification::make()
             ->title('Transaksi Selesai!')
@@ -67,4 +70,30 @@ class CreatePendapatan extends CreateRecord
         // 5.  untuk kembali ke halaman index (view) pendapatan
         $this->redirect($this->getResource()::getUrl('index'));
     }
+    protected function afterCreate(): void
+    {
+        $this->buatJurnalOtomatis($this->record);
+    }
+
+    protected function buatJurnalOtomatis($record)
+{
+    if ($record->status === 'bayar') {
+        try {
+            $jurnalService = app(JurnalOtomatisService::class);  // ← Perbaiki ini
+            $jurnal = $jurnalService->dariPendapatan($record);
+
+            Notification::make()
+                ->success()
+                ->title('Jurnal otomatis dibuat')
+                ->body("Jurnal {$jurnal->no_jurnal} telah dibuat")
+                ->send();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->danger()
+                ->title('Gagal membuat jurnal')
+                ->body($e->getMessage())
+                ->send();
+        }
+    }
+}
 }
