@@ -15,6 +15,7 @@ use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Support\Number;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\JurnalResource\Widgets\JurnalStats;
 
 class JurnalResource extends Resource
 {
@@ -99,7 +100,7 @@ class JurnalResource extends Resource
                     ->copyable()
                     ->copyMessage('No. Referensi disalin'),
                 BadgeColumn::make('sumber')
-                    ->label('Sumber')
+                    ->label('Keterangan')
                     ->colors([
                         'primary' => 'pendapatan',
                         'success' => 'penjualan',
@@ -148,6 +149,13 @@ class JurnalResource extends Resource
         return [
             'index' => Pages\Listjurnal::route('/'),
             'view' => Pages\ViewJurnal::route('/{record}'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            JurnalStats::class,
         ];
     }
 }
