@@ -15,7 +15,7 @@ class Jurnal extends Model
         'no_ref',
         'sumber',
         'sumber_id',
-        'keterangan'
+        'keterangan',
     ];
 
     public function details()
