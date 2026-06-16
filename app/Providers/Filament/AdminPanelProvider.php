@@ -18,6 +18,10 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+// tambahan
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -27,10 +31,11 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Amber,
             ])
+            // tambahan untuk notifikasi di panel admin
+            ->databaseNotifications()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -40,6 +45,18 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+                // tambahan untuk dashboard stats
+                \App\Filament\Widgets\DashboardStatCards::class,
+                // // tambahan chart pembelian
+                \App\Filament\Widgets\PembelianProdukChart::class,
+                // // tambahan chart pendapatan
+                \App\Filament\Widgets\PendapatanChart::class,
+                // // tambahan chart pembayaran
+                \App\Filament\Widgets\PembayaranChart::class,
+                // // tambahan chart pemakaian
+                \App\Filament\Widgets\PemakaianChart::class,
+                // // tambahan chart retur
+                \App\Filament\Widgets\ReturChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -57,4 +74,3 @@ class AdminPanelProvider extends PanelProvider
             ]);
     }
 }
-    
