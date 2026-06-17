@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\DB;
 
 class PembelianInsightWidget extends BaseWidget
 {
+    protected static bool $isDiscovered = false;
     // Mengatur agar widget memenuhi lebar layar secara horizontal (lebar penuh)
     protected int | string | array $columnSpan = 'full';
 
+    
     /**
      * Menyusun data statistik murni menggunakan PHP & komponen Stat Filament
      */
@@ -61,8 +63,6 @@ class PembelianInsightWidget extends BaseWidget
         $apiKey = trim(env('GEMINI_API_KEY', ''));
 
         return Cache::remember('barbershop_ai_purchase_chart', 600, function () use ($apiKey) {
-            
-            // 1. Ambil data aktual transaksi restock dari database secara aman
             try {
                 $riwayatPembelian = DB::table('pembelian_items')
                     ->join('produks', 'pembelian_items.produk_id', '=', 'produks.id')
@@ -79,7 +79,6 @@ class PembelianInsightWidget extends BaseWidget
                 $riwayatPembelian = '';
             }
 
-            // Data fallback terstruktur jika transaksi masih kosong atau API mati
             $fallbackData = [
                 'items' => [
                     ['produk' => 'Pomade Matte', 'keterangan' => '25 Pcs - Rp 1.250.000', 'analisis' => 'Perputaran sangat cepat, amankan stok.'],
@@ -93,7 +92,6 @@ class PembelianInsightWidget extends BaseWidget
                 return $fallbackData;
             }
 
-            // 2. Prompt instruksi murni terstruktur dalam format JSON dengan pembatasan panjang kalimat agar muat di kartu metrik
             $promptTeks = "Bertindaklah sebagai penasihat keuangan dan stok opname barbershop profesional. Berdasarkan data pengeluaran stok produk berikut: [" . $riwayatPembelian . "]. " .
                           "Buatlah peringkat maksimal 3 produk yang paling banyak menyerap anggaran belanja modal. " .
                           "Kamu WAJIB mengembalikan respons HANYA berupa JSON objek murni tanpa penanda markdown (seperti tag pembungkus kode json) dengan struktur persis seperti contoh ini: " .
@@ -143,7 +141,7 @@ class PembelianInsightWidget extends BaseWidget
                     }
                 }
             } catch (\Exception $e) {
-                // Gunakan data fallback jika koneksi API terganggu
+                // Gunakan fallback jika koneksi bermasalah
             }
 
             return $fallbackData;

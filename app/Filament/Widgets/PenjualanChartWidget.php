@@ -12,6 +12,8 @@ class PenjualanChartWidget extends ChartWidget
     // Judul utama yang tampil di atas box grafik panel admin
     protected static ?string $heading = '📊 Analisis Tren Produk Terlaris (Gemini AI)';
 
+
+    protected static bool $isDiscovered = false;
     // Memaksa widget agar memenuhi lebar layar (100% Horizontal)
     protected int | string | array $columnSpan = 'full';
 
