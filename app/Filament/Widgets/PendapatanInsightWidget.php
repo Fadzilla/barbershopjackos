@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class PendapatanInsightWidget extends BaseWidget
 {
+
+    protected static bool $isDiscovered = false;
     // Memaksa widget agar memenuhi lebar layar (100% Horizontal)
     protected int | string | array $columnSpan = 'full';
 
@@ -106,7 +108,7 @@ class PendapatanInsightWidget extends BaseWidget
 
             try {
                 // 3. Menghubungi API Gemini 2.5 Flash
-                $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=" . $apiKey;
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-preview-09-2025:generateContent?key=" . $apiKey;
 
                 $response = Http::post($url, [
                     'contents' => [

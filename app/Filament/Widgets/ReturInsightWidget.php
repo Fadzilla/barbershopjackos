@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class ReturInsightWidget extends BaseWidget
 {
+
+    protected static bool $isDiscovered = false;
     // Memaksa widget agar memenuhi lebar layar secara horizontal (lebar penuh)
     protected int | string | array $columnSpan = 'full';
 

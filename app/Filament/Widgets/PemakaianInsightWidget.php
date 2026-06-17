@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 
 class PemakaianInsightWidget extends BaseWidget
 {
+
+    protected static bool $isDiscovered = false;
     // Mengatur agar widget membentang penuh 100% dari kiri ke kanan layar [cite: 347]
     protected int | string | array $columnSpan = 'full';
 
