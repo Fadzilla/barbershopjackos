@@ -61,4 +61,14 @@ class Penjualan extends Model
     {
     return $this->belongsTo(PembayaranPenjualan::class);
     }
+
+    protected static function booted()
+{
+    static::saved(function ($penjualan) {
+        if ($penjualan->status === 'bayar') {
+            $jurnalService = app(\App\Services\JurnalOtomatisService::class);
+            $jurnalService->dariPenjualan($penjualan);
+        }
+    });
+}
 }

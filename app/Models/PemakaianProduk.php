@@ -21,4 +21,12 @@ class PemakaianProduk extends Model
     {
         return $this->belongsTo(Produk::class, 'produk_id');
     }
+
+    protected static function booted()
+{
+    static::created(function ($pemakaian) {
+        $jurnalService = app(\App\Services\JurnalOtomatisService::class);
+        $jurnalService->dariPemakaian($pemakaian);
+    });
+}
 }

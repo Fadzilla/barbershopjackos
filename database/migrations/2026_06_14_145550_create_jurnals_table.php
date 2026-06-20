@@ -10,18 +10,10 @@ return new class extends Migration
     {
         Schema::create('jurnal', function (Blueprint $table) {
             $table->id();
-            $table->string('no_jurnal')->unique();
-            $table->date('tanggal');
-            $table->string('no_ref')->nullable();
-            $table->string('sumber'); // pendapatan, penjualan, pembelian, pemakaian, retur
-            $table->unsignedBigInteger('sumber_id');
-            $table->text('keterangan')->nullable();
+            $table->date('tgl');
+            $table->string('no_referensi')->nullable();
+            $table->string('deskripsi')->nullable();
             $table->timestamps();
-            
-            // Index untuk pencarian
-            $table->index(['sumber', 'sumber_id']);
-            $table->index('no_ref');
-            $table->index('tanggal');
         });
     }
 
