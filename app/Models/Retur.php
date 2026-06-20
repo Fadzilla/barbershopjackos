@@ -53,6 +53,11 @@ class Retur extends Model
                 $produk->increment('stok', $retur->qty);
             }
         });
+
+        static::created(function ($retur) {
+            $jurnalService = app(\App\Services\JurnalOtomatisService::class);
+            $jurnalService->dariRetur($retur);
+        });
     }
 
     public static function getKodeRetur()
@@ -72,4 +77,5 @@ class Retur extends Model
     {
         return $this->belongsTo(Produk::class, 'produk_id');
     }
+
 }

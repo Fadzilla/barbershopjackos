@@ -9,18 +9,19 @@ class Jurnal extends Model
 {
     protected $table = 'jurnal';
     
-    protected $fillable = [
-        'no_jurnal',
-        'tanggal',
-        'no_ref',
-        'sumber',
-        'sumber_id',
-        'keterangan',
-    ];
+    protected $guarded = []; //agar seluruh kolom dapat dimodifikasi
 
-    public function details()
+    // relasi ke jurnal detail 1-N
+    public function jurnaldetail()
     {
         return $this->hasMany(JurnalDetail::class);
+    }
+
+    public function isBalanced()
+    {
+        $debit = $this->jurnaldetail->sum('debit');
+        $credit = $this->jurnaldetail->sum('credit');
+        return $debit == $credit;
     }
 
     // Relasi polymorphic ke sumber transaksi

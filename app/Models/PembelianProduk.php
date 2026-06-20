@@ -33,4 +33,12 @@ class PembelianProduk extends Model
         });
     }
 
+    protected static function booted()
+    {
+        static::created(function ($pembelian) {
+            $jurnalService = app(\App\Services\JurnalOtomatisService::class);
+            $jurnalService->dariPembelian($pembelian);
+        });
+    }
+
 }

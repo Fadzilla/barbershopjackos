@@ -9,18 +9,15 @@ class JurnalDetail extends Model
 {
     protected $table = 'jurnal_detail';
     
-    protected $fillable = [
-        'jurnal_id',
-        'coa_id',
-        'debit',
-        'kredit'
-    ];
+    protected $guarded = [];
 
+    // relasi ke tabel jurnal
     public function jurnal()
     {
         return $this->belongsTo(Jurnal::class);
     }
 
+    // relasi ke tabel coa
     public function coa()
     {
         return $this->belongsTo(Coa::class);

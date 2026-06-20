@@ -20,6 +20,50 @@ class JurnalOtomatisService
     }
 
     /**
+     * Method utama untuk membuat jurnal dengan pengecekan duplikat yang ketat
+     */
+    private function buatJurnal($data, $detailEntries)
+    {
+        return DB::transaction(function () use ($data, $detailEntries) {
+            // 1. Cek dengan lock for update
+            $existingJurnal = Jurnal::where('no_referensi', $data['no_referensi'])
+                ->lockForUpdate()
+                ->first();
+                
+            if ($existingJurnal) {
+                return $existingJurnal;
+            }
+
+            // 2. Buat jurnal
+            $jurnal = Jurnal::create([
+                'tgl' => $data['tgl'],
+                'no_referensi' => $data['no_referensi'],
+                'deskripsi' => $data['deskripsi'] ?? '',
+            ]);
+
+            // 3. Buat detail jurnal
+            foreach ($detailEntries as $detail) {
+                $debit = $detail['debit'] ?? 0;
+                $credit = $detail['credit'] ?? 0;
+                
+                if ($debit == 0 && $credit == 0) {
+                    throw new \Exception("Debit atau credit harus memiliki nilai > 0 untuk jurnal {$data['no_referensi']}");
+                }
+
+                JurnalDetail::create([
+                    'jurnal_id' => $jurnal->id,
+                    'coa_id' => $this->getCoaId($detail['kode_akun']),
+                    'debit' => $debit,
+                    'credit' => $credit,
+                    'deskripsi' => $detail['deskripsi'] ?? '',
+                ]);
+            }
+
+            return $jurnal;
+        });
+    }
+
+    /**
      * Jurnal dari Pendapatan (status bayar)
      */
     public function dariPendapatan($pendapatan)
@@ -28,32 +72,33 @@ class JurnalOtomatisService
             return null;
         }
 
-        return DB::transaction(function () use ($pendapatan) {
-            $jurnal = Jurnal::create([
-                'no_jurnal' => $this->generateNoJurnal(),
-                'tanggal' => $pendapatan->tgl,
-                'no_ref' => $pendapatan->no_faktur,
-                'sumber' => 'pendapatan',
-                'sumber_id' => $pendapatan->id,
-                'keterangan' => "Pendapatan faktur {$pendapatan->no_faktur}",
-            ]);
+        $total = $pendapatan->total ?? 0;
+        
+        if ($total <= 0) {
+            return null;
+        }
 
-            // Debit: Kas (kode 111)
-            JurnalDetail::create([
-                'jurnal_id' => $jurnal->id,
-                'coa_id' => $this->getCoaId('111'),
-                'debit' => $pendapatan->total,
-            ]);
-
-            // Kredit: Pendapatan (kode 411)
-            JurnalDetail::create([
-                'jurnal_id' => $jurnal->id,
-                'coa_id' => $this->getCoaId('411'),
-                'kredit' => $pendapatan->total,
-            ]);
-
-            return $jurnal;
-        });
+        return $this->buatJurnal(
+            [
+                'tgl' => $pendapatan->tgl,
+                'no_referensi' => $pendapatan->no_faktur,
+                'deskripsi' => "Pendapatan - Faktur {$pendapatan->no_faktur}",
+            ],
+            [
+                [
+                    'kode_akun' => '111',
+                    'debit' => $total,
+                    'credit' => 0,
+                    'deskripsi' => 'Penerimaan kas dari pendapatan',
+                ],
+                [
+                    'kode_akun' => '411',
+                    'debit' => 0,
+                    'credit' => $total,
+                    'deskripsi' => 'Pendapatan jasa salon/barbershop',
+                ]
+            ]
+        );
     }
 
     /**
@@ -65,30 +110,33 @@ class JurnalOtomatisService
             return null;
         }
 
-        return DB::transaction(function () use ($penjualan) {
-            $jurnal = Jurnal::create([
-                'no_jurnal' => $this->generateNoJurnal(),
-                'tanggal' => $penjualan->tgl,
-                'no_ref' => $penjualan->no_faktur,
-                'sumber' => 'penjualan',
-                'sumber_id' => $penjualan->id,
-                'keterangan' => "Penjualan faktur {$penjualan->no_faktur}",
-            ]);
+        $total = $penjualan->total_dibayar ?? 0;
+        
+        if ($total <= 0) {
+            return null;
+        }
 
-            JurnalDetail::create([
-                'jurnal_id' => $jurnal->id,
-                'coa_id' => $this->getCoaId('111'), // Kas
-                'debit' => $penjualan->total_dibayar,
-            ]);
-
-            JurnalDetail::create([
-                'jurnal_id' => $jurnal->id,
-                'coa_id' => $this->getCoaId('412'), // Penjualan
-                'kredit' => $penjualan->total_dibayar,
-            ]);
-
-            return $jurnal;
-        });
+        return $this->buatJurnal(
+            [
+                'tgl' => $penjualan->tgl,
+                'no_referensi' => $penjualan->no_faktur,
+                'deskripsi' => "Penjualan - Faktur {$penjualan->no_faktur}",
+            ],
+            [
+                [
+                    'kode_akun' => '111',
+                    'debit' => $total,
+                    'credit' => 0,
+                    'deskripsi' => 'Penerimaan kas kasir penjualan',
+                ],
+                [
+                    'kode_akun' => '412',
+                    'debit' => 0,
+                    'credit' => $total,
+                    'deskripsi' => 'Penjualan produk/layanan barbershop',
+                ]
+            ]
+        );
     }
 
     /**
@@ -96,98 +144,157 @@ class JurnalOtomatisService
      */
     public function dariPembelian($pembelian)
     {
-        return DB::transaction(function () use ($pembelian) {
-            $jurnal = Jurnal::create([
-                'no_jurnal' => $this->generateNoJurnal(),
-                'tanggal' => $pembelian->tanggal,
-                'no_ref' => $pembelian->no_faktur,
-                'sumber' => 'pembelian',
-                'sumber_id' => $pembelian->id,
-                'keterangan' => "Pembelian faktur {$pembelian->no_faktur}",
-            ]);
+        $total = $pembelian->total ?? 0;
+        
+        if ($total <= 0) {
+            return null;
+        }
 
-            JurnalDetail::create([
-                'jurnal_id' => $jurnal->id,
-                'coa_id' => $this->getCoaId('511'), // Pembelian
-                'debit' => $pembelian->total,
-            ]);
-
-            JurnalDetail::create([
-                'jurnal_id' => $jurnal->id,
-                'coa_id' => $this->getCoaId('111'), // Kas
-                'kredit' => $pembelian->total,
-            ]);
-
-            return $jurnal;
-        });
+        return $this->buatJurnal(
+            [
+                'tgl' => $pembelian->tanggal,
+                'no_referensi' => $pembelian->no_faktur,
+                'deskripsi' => "Pembelian - Faktur {$pembelian->no_faktur}",
+            ],
+            [
+                [
+                    'kode_akun' => '511',
+                    'debit' => $total,
+                    'credit' => 0,
+                    'deskripsi' => 'Pembelian stok/perlengkapan',
+                ],
+                [
+                    'kode_akun' => '111',
+                    'debit' => 0,
+                    'credit' => $total,
+                    'deskripsi' => 'Pengeluaran kas untuk pembelian',
+                ]
+            ]
+        );
     }
 
     /**
-     * Jurnal dari Pemakaian (no_ref = nomer_pemakaian)
+     * Jurnal dari Pemakaian
      */
     public function dariPemakaian($pemakaian)
     {
-        return DB::transaction(function () use ($pemakaian) {
-            $jurnal = Jurnal::create([
-                'no_jurnal' => $this->generateNoJurnal(),
-                'tanggal' => $pemakaian->tanggal_pakai,
-                'no_ref' => $pemakaian->nomer_pemakaian,
-                'sumber' => 'pemakaian',
-                'sumber_id' => $pemakaian->id,
-                'keterangan' => "Pemakaian {$pemakaian->nomer_pemakaian}",
-            ]);
+        $total = $pemakaian->total_pemakaian ?? 0;
+        
+        if ($total <= 0) {
+            return null;
+        }
 
-            JurnalDetail::create([
-                'jurnal_id' => $jurnal->id,
-                'coa_id' => $this->getCoaId('512'), // Beban Pemakaian
-                'debit' => $pemakaian->total_pemakaian,
-            ]);
+        return $this->buatJurnal(
+            [
+                'tgl' => $pemakaian->tanggal_pakai,
+                'no_referensi' => $pemakaian->nomer_pemakaian,
+                'deskripsi' => "Pemakaian - {$pemakaian->nomer_pemakaian}",
+            ],
+            [
+                [
+                    'kode_akun' => '512',
+                    'debit' => $total,
+                    'credit' => 0,
+                    'deskripsi' => 'Beban pemakaian perlengkapan internal',
+                ],
+                [
+                    'kode_akun' => '112',
+                    'debit' => 0,
+                    'credit' => $total,
+                    'deskripsi' => 'Pengurangan persediaan barang',
+                ]
+            ]
+        );
+    }
 
-            JurnalDetail::create([
-                'jurnal_id' => $jurnal->id,
-                'coa_id' => $this->getCoaId('112'), // Persediaan
-                'kredit' => $pemakaian->total_pemakaian,
-            ]);
+    /**
+     * Jurnal dari Retur
+     */
+    public function dariRetur($retur)
+    {
+        $total = $retur->total ?? 0;
+        
+        if ($total <= 0) {
+            return null;
+        }
 
-            return $jurnal;
+        return $this->buatJurnal(
+            [
+                'tgl' => $retur->tanggal_retur,
+                'no_referensi' => $retur->kode_retur,
+                'deskripsi' => "Retur - {$retur->kode_retur}",
+            ],
+            [
+                [
+                    'kode_akun' => '111',
+                    'debit' => $total,
+                    'credit' => 0,
+                    'deskripsi' => 'Penerimaan kembali kas dari retur',
+                ],
+                [
+                    'kode_akun' => '413',
+                    'debit' => 0,
+                    'credit' => $total,
+                    'deskripsi' => 'Pencatatan retur barang',
+                ]
+            ]
+        );
+    }
+
+    /**
+     * Hapus semua jurnal duplikat yang sudah terlanjur masuk
+     */
+    public function hapusSemuaDuplikat()
+    {
+        return DB::transaction(function () {
+            $duplikat = Jurnal::select('no_referensi', DB::raw('COUNT(*) as count'))
+                ->groupBy('no_referensi')
+                ->having('count', '>', 1)
+                ->get();
+
+            if ($duplikat->isEmpty()) {
+                return "Tidak ada data duplikat ditemukan";
+            }
+
+            $totalDihapus = 0;
+            $detailDihapus = 0;
+            
+            foreach ($duplikat as $dup) {
+                $jurnals = Jurnal::where('no_referensi', $dup->no_referensi)
+                    ->orderBy('id', 'asc')
+                    ->get();
+                
+                $sisanya = $jurnals->slice(1);
+                foreach ($sisanya as $jurnal) {
+                    $deletedDetail = JurnalDetail::where('jurnal_id', $jurnal->id)->delete();
+                    $detailDihapus += $deletedDetail;
+                    $jurnal->delete();
+                    $totalDihapus++;
+                }
+            }
+            
+            return "Berhasil menghapus {$totalDihapus} data jurnal duplikat dan {$detailDihapus} detail jurnal";
         });
     }
 
     /**
-     * Jurnal dari Retur (no_ref = kode_retur)
+     * Cek apakah ada jurnal duplikat
      */
-    public function dariRetur($retur)
+    public function cekDuplikat()
     {
-        return DB::transaction(function () use ($retur) {
-            $jurnal = Jurnal::create([
-                'no_jurnal' => $this->generateNoJurnal(),
-                'tanggal' => $retur->tanggal_retur,
-                'no_ref' => $retur->kode_retur,
-                'sumber' => 'retur',
-                'sumber_id' => $retur->id,
-                'keterangan' => "Retur {$retur->kode_retur}",
-            ]);
+        $duplikat = Jurnal::select('no_referensi', DB::raw('COUNT(*) as count'))
+            ->groupBy('no_referensi')
+            ->having('count', '>', 1)
+            ->get();
 
-            JurnalDetail::create([
-                'jurnal_id' => $jurnal->id,
-                'coa_id' => $this->getCoaId('111'), // Kas
-                'debit' => $retur->total,
-            ]);
+        if ($duplikat->isEmpty()) {
+            return "Tidak ada data duplikat";
+        }
 
-            JurnalDetail::create([
-                'jurnal_id' => $jurnal->id,
-                'coa_id' => $this->getCoaId('413'), // Retur
-                'kredit' => $retur->total,
-            ]);
-
-            return $jurnal;
-        });
-    }
-
-    private function generateNoJurnal()
-    {
-        $last = Jurnal::latest('id')->first();
-        $number = $last ? intval(substr($last->no_jurnal, 4)) + 1 : 1;
-        return 'JRN-' . str_pad($number, 6, '0', STR_PAD_LEFT);
+        $result = [];
+        foreach ($duplikat as $dup) {
+            $result[] = "no_referensi: {$dup->no_referensi} - {$dup->count} kali muncul";
+        }
+        return $result;
     }
 }

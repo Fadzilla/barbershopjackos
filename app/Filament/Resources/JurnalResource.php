@@ -3,159 +3,162 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\JurnalResource\Pages;
-use App\Filament\Resources\JurnalResource\RelationManagers;
 use App\Models\Jurnal;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Support\Number;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\JurnalResource\Widgets\JurnalStats;
+
+// Tambahan komponen form dan tabel sesuai contohmu
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\Section;
+use App\Models\Coa;
 
 class JurnalResource extends Resource
 {
     protected static ?string $model = Jurnal::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationLabel = 'Jurnal Umum';
-    protected static ?string $pluralLabel = 'Jurnal Umum';
-    protected static ?string $navigationGroup = 'Akuntansi';
 
-    // Nonaktifkan create (karena jurnal dibuat otomatis)
-    public static function canCreate(): bool
-    {
-        return false;
-    }
+    // Merubah icon menjadi buku terbuka sesuai request-mu
+    protected static ?string $navigationIcon = 'heroicon-o-book-open';
+
+    // Label Jurnal Umum
+    protected static ?string $navigationLabel = 'Jurnal Umum';
+
+    // Grup navigasi dirubah ke Laporan sesuai request-mu
+    protected static ?string $navigationGroup = 'Laporan';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Informasi Jurnal')
+                Section::make('Deskripsi Jurnal')
                     ->schema([
-                        Forms\Components\TextInput::make('no_jurnal')
-                            ->label('No. Jurnal')
-                            ->disabled(),
-                        Forms\Components\DatePicker::make('tanggal')
+                        // Menggunakan nama field dari migration/database kamu
+                        DatePicker::make('tgl') // Disesuaikan agar sinkron dengan database/service
                             ->label('Tanggal')
-                            ->disabled(),
-                        Forms\Components\TextInput::make('no_ref')
-                            ->label('No. Referensi')
-                            ->disabled(),
-                        Forms\Components\TextInput::make('sumber')
-                            ->label('Sumber Transaksi')
-                            ->disabled(),
-                        Forms\Components\Textarea::make('keterangan')
-                            ->label('Keterangan')
-                            ->disabled()
-                            ->rows(2),
-                    ])->columns(2),
+                            ->required()
+                            ->default(now()),
 
-                Forms\Components\Section::make('Detail Jurnal')
+                        TextInput::make('no_ref') // Menggunakan 'no_ref' agar sinkron dengan database/service
+                            ->label('No Referensi')
+                            ->maxLength(100),
+
+                        Textarea::make('keterangan') // Menggunakan 'keterangan' agar sinkron dengan database/service
+                            ->label('Deskripsi'),
+                    ])->columns(1)
+                    ->collapsed() // <- Awalnya tertutup sesuai tampilan yang kamu mau
+                    ->collapsible(),
+
+                Section::make('Detail Jurnal')
                     ->schema([
-                        Forms\Components\Repeater::make('details')
-                            ->relationship()
+                        // Menggunakan nama 'items' namun diarahkan ke relasi 'jurnaldetail' agar aman
+                        Repeater::make('items')
+                            ->label('Detail Jurnal')
+                            ->relationship('jurnaldetail') // Menghubungkan ke relasi jurnaldetail di model Jurnal
                             ->schema([
-                                Forms\Components\Select::make('coa_id')
+                                Select::make('coa_id')
                                     ->label('Akun')
-                                    ->relationship('coa', 'nama_akun')
-                                    ->getOptionLabelFromRecordUsing(fn($record) => "{$record->kode_akun} - {$record->nama_akun}")
-                                    ->disabled(),
-                                Forms\Components\TextInput::make('debit')
-                                    ->label('Debit')
+                                    ->options(Coa::all()->pluck('nama_akun', 'id'))
+                                    ->searchable()
+                                    ->required(),
+                                TextInput::make('debit')
                                     ->numeric()
-                                    ->disabled()
-                                    ->formatStateUsing(fn($state) => Number::currency($state, 'IDR')),
-                                Forms\Components\TextInput::make('kredit')
-                                    ->label('Kredit')
+                                    ->default(0)
+                                    ->prefix('Rp')
+                                    ->required(),
+                                TextInput::make('credit') // Tetap 'credit' sesuai kolom di database kamu
                                     ->numeric()
-                                    ->disabled()
-                                    ->formatStateUsing(fn($state) => Number::currency($state, 'IDR')),
+                                    ->default(0)
+                                    ->prefix('Rp')
+                                    ->required(),
+                                Textarea::make('deskripsi')->label('Keterangan')->rows(2),
                             ])
-                            ->columns(3)
-                            ->disabled(),
-                    ]),
-            ]);
+                            ->columns(1)
+                            ->required(),
+                    ])
+                    ->collapsed() // <- Awalnya tertutup sesuai tampilan yang kamu mau
+                    ->collapsible(),
+            ])
+            ->columns(1); // Layout diatur menjadi 1 kolom penuh
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('no_jurnal')
-                    ->label('No. Jurnal')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('tanggal')
+                TextColumn::make('tgl') // Menggunakan field 'tanggal' dari database kamu
                     ->label('Tanggal')
-                    ->date('d/m/Y')
-                    ->sortable(),
-                TextColumn::make('no_ref')
-                    ->label('No. Referensi')
-                    ->searchable()
-                    ->copyable()
-                    ->copyMessage('No. Referensi disalin'),
-                BadgeColumn::make('sumber')
-                    ->label('Keterangan')
-                    ->colors([
-                        'primary' => 'pendapatan',
-                        'success' => 'penjualan',
-                        'warning' => 'pembelian',
-                        'info' => 'pemakaian',
-                        'danger' => 'retur',
-                    ])
-                    ->formatStateUsing(fn($state) => ucfirst($state))
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->date('d/m/Y'),
+                TextColumn::make('no_referensi') // Menggunakan field 'no_ref' dari database kamu
+                    ->label('Ref'),
+                TextColumn::make('deskripsi') // Menggunakan field 'keterangan' dari database kamu
+                    ->label('Deskripsi')
+                    ->formatStateUsing(function ($state) {
+                        if (blank($state)) {
+                            return '-';
+                        }
+
+                        // Memecah string berdasarkan karakter ' - '
+                        // Contoh: "Pendapatan - Faktur F-0000066" akan dipecah menjadi array
+                        $parts = explode(' - ', $state);
+
+                        // Ambil elemen pertama (indeks 0), yaitu kata "Pendapatan"
+                        return trim($parts[0]);
+                    })
+                    ->limit(30),
+                TextColumn::make('jurnaldetail.debit')
+                    ->label('Total Debit')
+                    ->formatStateUsing(function ($record) {
+                        // Menghitung jumlah debit dari relasi jurnaldetail
+                        $debit = $record->jurnaldetail()->sum('debit');
+                        return Number::currency($debit, 'IDR', 'id'); // Aman dan tidak butuh helper eksternal
+                    })
+                    ->alignment('end'),
+                TextColumn::make('jurnaldetail.credit')
+                    ->label('Total Kredit')
+                    ->formatStateUsing(function ($record) {
+                        // Menghitung jumlah credit dari relasi jurnaldetail
+                        $credit = $record->jurnaldetail()->sum('credit');
+                        return Number::currency($credit, 'IDR', 'id');
+                    })
+                    ->alignment('end'),
             ])
-            ->defaultSort('tanggal', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('sumber')
-                    ->label('Sumber Transaksi')
-                    ->options([
-                        'pendapatan' => 'Pendapatan',
-                        'penjualan' => 'Penjualan',
-                        'pembelian' => 'Pembelian',
-                        'pemakaian' => 'Pemakaian',
-                        'retur' => 'Retur',
-                    ]),
-                Tables\Filters\Filter::make('tanggal')
-                    ->form([
-                        Forms\Components\DatePicker::make('dari'),
-                        Forms\Components\DatePicker::make('sampai'),
-                    ])
-                    ->query(function ($query, array $data) {
-                        return $query
-                            ->when($data['dari'], fn($q) => $q->whereDate('tanggal', '>=', $data['dari']))
-                            ->when($data['sampai'], fn($q) => $q->whereDate('tanggal', '<=', $data['sampai']));
-                    }),
+                //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->label('Lihat Detail'),
-            ]);
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ])
+            ->defaultSort('tgl', 'desc'); // Diurutkan berdasarkan tanggal terbaru kamu
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\Listjurnal::route('/'),
-            'view' => Pages\ViewJurnal::route('/{record}'),
-        ];
-    }
-
-    public static function getWidgets(): array
-    {
-        return [
-            JurnalStats::class,
+            'create' => Pages\CreateJurnal::route('/create'),
+            'edit' => Pages\EditJurnal::route('/{record}/edit'),
         ];
     }
 }
