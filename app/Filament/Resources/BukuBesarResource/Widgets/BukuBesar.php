@@ -35,13 +35,13 @@ class BukuBesar extends Widget
         $saldoAwal = 0;
 
         // QUERY UTAMA
-        $jurnalsQuery = Jurnal::with(['details' => function ($query) {
+        $jurnalsQuery = Jurnal::with(['jurnaldetail' => function ($query) {
             if ($this->coa_id) {
                 $query->where('coa_id', $this->coa_id);
             }
             $query->with('coa');
         }])
-        ->orderBy('tanggal', 'asc')
+        ->orderBy('tgl', 'asc')
         ->orderBy('id', 'asc');
 
         if ($this->periode_awal && $this->periode_akhir) {
@@ -50,30 +50,30 @@ class BukuBesar extends Widget
             $akhir = Carbon::createFromFormat('Y-m', $this->periode_akhir)->endOfMonth();
 
             // SALDO AWAL (Menghitung total transaksi sebelum periode yang dipilih)
-            $saldoAwal = Jurnal::where('tanggal', '<', $awal)
-                ->with(['details' => function ($query) {
+            $saldoAwal = Jurnal::where('tgl', '<', $awal)
+                ->with(['jurnaldetail' => function ($query) {
                     if ($this->coa_id) {
                         $query->where('coa_id', $this->coa_id);
                     }
                 }])
                 ->get()
-                ->flatMap->details
+                ->flatMap->jurnaldetail
                 ->sum(function ($detail) {
                     // Menghitung selisih debit dan credit
                     return ($detail->debit ?? $detail->debit) - ($detail->credit ?? $detail->kredit);
                 });
 
             // FILTER PERIODE
-            $jurnalsQuery->whereBetween('tanggal', [$awal, $akhir]);
+            $jurnalsQuery->whereBetween('tgl', [$awal, $akhir]);
         }
 
         // Supaya sinkron dengan perulangan di view Blade milikmu yang menggunakan $jurnal->jurnaldetail
         // kita lakukan load ke property 'jurnaldetail' juga jika dibutuhkan
         $jurnals = $jurnalsQuery->get()->map(function($jurnal) {
             // Kita duplikat property 'details' ke 'jurnaldetail' agar variabel di Blade tidak rusak
-            $jurnal->jurnaldetail = $jurnal->details;
+            $jurnal->jurnaldetail = $jurnal->jurnaldetail;
             // Kita duplikat property 'tanggal' ke 'tgl' agar Carbon::parse($jurnal->tgl) di Blade tidak error null
-            $jurnal->tgl = $jurnal->tanggal;
+            $jurnal->tgl = $jurnal->tgl;
             // Kita duplikat property 'no_ref' ke 'no_referensi' agar match dengan Blade kamu
             $jurnal->no_referensi = $jurnal->no_ref;
             return $jurnal;
